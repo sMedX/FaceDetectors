@@ -4,8 +4,8 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import pathlib as plib
 from prepare_data import wider, lfw, tfrecords, examples
-from train_models import PNet, RNet, ONet
-from train_models.train import train
+from models import PNet, RNet, ONet
+from models.train import train
 
 
 # default directory to save train data
@@ -46,38 +46,38 @@ def main():
     # ------------------------------------------------------------------------------------------------------------------
     # train P-Net (prediction net)
 
-    # # prepare train data
-    # wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
-    # lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
-    #
-    # # save tf record files
-    # tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
-    #
-    # # train
-    # train(pnet, tfprefix=pnet.dbase.tfprefix, prefix=pnet.prefix, seed=seed)
-    #
-    # # ------------------------------------------------------------------------------------------------------------------
-    # # train R-Net (refinement net)
-    #
-    # # prepare train data
-    # examples.generate(dbwider, models=(pnet, rnet), threshold=(0.3, 0.1, 0.7), min_face_size=20, stride=2)
-    # lfw.prepare(dblfw, rnet.dbase, image_size=rnet.image_size, seed=seed)
-    #
-    # # save tf record files
-    # tfrecords.write_multi_tfrecords(rnet.dbase.h5file, prefix=rnet.dbase.tfprefix, seed=seed)
-    #
-    # # train
-    # train(rnet, tfprefix=rnet.dbase.tfprefix, prefix=rnet.prefix, seed=seed)
-    #
-    # # ------------------------------------------------------------------------------------------------------------------
-    # # train O-Net (refinement net)
-    #
-    # # prepare train data
-    # examples.generate(dbwider, models=(pnet, rnet, onet), threshold=(0.3, 0.1, 0.7), min_face_size=20, stride=2)
-    # lfw.prepare(dblfw, onet.dbase, image_size=onet.image_size, seed=seed)
-    #
-    # # save tf record files
-    # tfrecords.write_multi_tfrecords(onet.dbase.h5file, prefix=onet.dbase.tfprefix, seed=seed)
+    # prepare train data
+    wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
+    lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
+
+    # save tf record files
+    tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
+
+    # train
+    train(pnet, tfprefix=pnet.dbase.tfprefix, prefix=pnet.prefix, seed=seed)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # train R-Net (refinement net)
+
+    # prepare train data
+    examples.generate(dbwider, models=(pnet, rnet), threshold=(0.3, 0.1, 0.7), min_face_size=20, stride=2)
+    lfw.prepare(dblfw, rnet.dbase, image_size=rnet.image_size, seed=seed)
+
+    # save tf record files
+    tfrecords.write_multi_tfrecords(rnet.dbase.h5file, prefix=rnet.dbase.tfprefix, seed=seed)
+
+    # train
+    train(rnet, tfprefix=rnet.dbase.tfprefix, prefix=rnet.prefix, seed=seed)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # train O-Net (refinement net)
+
+    # prepare train data
+    examples.generate(dbwider, models=(pnet, rnet, onet), threshold=(0.3, 0.1, 0.7), min_face_size=20, stride=2)
+    lfw.prepare(dblfw, onet.dbase, image_size=onet.image_size, seed=seed)
+
+    # save tf record files
+    tfrecords.write_multi_tfrecords(onet.dbase.h5file, prefix=onet.dbase.tfprefix, seed=seed)
 
     # train
     train(onet, tfprefix=onet.dbase.tfprefix, prefix=onet.prefix, seed=seed)

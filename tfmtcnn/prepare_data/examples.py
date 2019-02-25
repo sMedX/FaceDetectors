@@ -6,9 +6,9 @@ import numpy as np
 import cv2
 
 from prepare_data import wider
-from Detection.detector import Detector
-from Detection.fcn_detector import FcnDetector
-from Detection.MtcnnDetector import MtcnnDetector
+from models.detector import Detector
+from models.fcn_detector import FcnDetector
+from mtcnn import MTCNN
 from prepare_data import ioutils, h5utils
 from prepare_data.utils import convert_to_square
 from prepare_data.data_utils import IoU
@@ -28,9 +28,9 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
     model_path = '{}-{}'.format(config.prefix, config.number_of_epochs)
 
     if slide_window:
-        detectors[0] = Detector(config.factory, config.image_size, batch_size, model_path)
+        detectors[0] = Detector(config(), batch_size, model_path)
     else:
-        detectors[0] = FcnDetector(config.factory, model_path)
+        detectors[0] = FcnDetector(config(), model_path)
 
     image_size = models[1].image_size
     h5file = models[1].dbase.h5file
@@ -39,14 +39,17 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
     if len(models) > 2:
         config = models[1]
         model_path = '{}-{}'.format(config.prefix, config.number_of_epochs)
-        detectors[1] = Detector(config.factory, config.image_size, batch_size, model_path)
+        detectors[1] = Detector(config(), batch_size, model_path)
 
         image_size = models[2].image_size
         h5file = models[2].dbase.h5file
 
     # initialize detector
-    detector = MtcnnDetector(detectors=detectors, min_face_size=min_face_size,
-                             stride=stride, threshold=threshold, slide_window=slide_window)
+    detector = MTCNN(detectors=detectors,
+                     min_face_size=min_face_size,
+                     stride=stride,
+                     threshold=threshold,
+                     slide_window=slide_window)
 
     # create output directories
     for key in ('positive', 'negative', 'part'):
@@ -65,8 +68,8 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
 
     loader = ioutils.ImageLoader(data['images'], prefix=dbwider.images)
 
-    for img, gts in zip(loader, data['bboxes']):
-        dets, _ = detector.detect_single_image(img)
+    for (_, img), gts in zip(loader, data['bboxes']):
+        dets, _ = detector.detect(img)
         if dets.shape[0] == 0:
             continue
 
