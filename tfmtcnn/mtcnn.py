@@ -223,7 +223,7 @@ class MTCNN:
             if boxes.size == 0:
                 continue
             # get the index from non-maximum s
-            keep = py_nms(boxes[:, :5], 0.5, 'Union')
+            keep = nms(boxes[:, :5], 0.5, 'Union')
             boxes = boxes[keep]
             all_boxes.append(boxes)
 
@@ -233,7 +233,7 @@ class MTCNN:
         all_boxes = np.vstack(all_boxes)
 
         # merge the detection from first stage
-        keep = py_nms(all_boxes[:, 0:5], 0.7, 'Union')
+        keep = nms(all_boxes[:, 0:5], 0.7, 'Union')
         all_boxes = all_boxes[keep]
         boxes = all_boxes[:, :5]
 
@@ -292,7 +292,7 @@ class MTCNN:
         else:
             return None, None, None
 
-        keep = py_nms(boxes, 0.6)
+        keep = nms(boxes, 0.6)
         boxes = boxes[keep]
         boxes_c = self.calibrate_box(boxes, reg[keep])
         return boxes, boxes_c, None
@@ -346,122 +346,13 @@ class MTCNN:
         landmark[:, 1::2] = (np.tile(h, (5, 1)) * landmark[:, 1::2].T + np.tile(boxes[:, 1], (5, 1)) - 1).T
         boxes_c = self.calibrate_box(boxes, reg)
 
-        boxes = boxes[py_nms(boxes, 0.6, "Minimum")]
-        keep = py_nms(boxes_c, 0.6, "Minimum")
+        boxes = boxes[nms(boxes, 0.6, "Minimum")]
+        keep = nms(boxes_c, 0.6, "Minimum")
         boxes_c = boxes_c[keep]
         landmark = landmark[keep]
         return boxes, boxes_c, landmark
 
-    # use for video
-    def detect(self, img):
-        """Detect face over image
-        """
-        boxes = None
-        t = time.time()
-
-        # Pnet
-        t1 = 0
-        if self.pnet_detector:
-            boxes, boxes_c, _ = self.detect_pnet(img)
-            if boxes_c is None:
-                return np.array([]), np.array([])
-
-            t1 = time.time() - t
-            t = time.time()
-
-        # rnet
-        t2 = 0
-        if self.rnet_detector:
-            boxes, boxes_c, _ = self.detect_rnet(img, boxes_c)
-            if boxes_c is None:
-                return np.array([]), np.array([])
-
-            t2 = time.time() - t
-            t = time.time()
-
-        # onet
-        t3 = 0
-        if self.onet_detector:
-            boxes, boxes_c, landmark = self.detect_onet(img, boxes_c)
-            if boxes_c is None:
-                return np.array([]), np.array([])
-
-            t3 = time.time() - t
-            t = time.time()
-            # print(
-            #    "time cost " + '{:.3f}'.format(t1 + t2 + t3) + '  pnet {:.3f}  rnet {:.3f}  onet {:.3f}'.format(t1, t2,
-            #                                                                                                  t3))
-
-        return boxes_c, landmark
-
-    def detect_face(self, test_data):
-        all_boxes = []  # save each image's bboxes
-        landmarks = []
-        batch_idx = 0
-
-        # elapsed times to detect faces
-        elapsed_time = [0, 0, 0]
-        num_of_img = test_data.size
-        empty_array = np.array([])
-        # test_data is iter_
-        start_time = time.time()
-        print('number of images', num_of_img)
-
-        for databatch in test_data:
-            batch_idx += 1
-            if batch_idx % 100 == 0:
-                # print("%d out of %d images done" % (batch_idx, test_data.size))
-                print((time.time() - start_time)/100, 'seconds for each image')
-                start_time = time.time()
-
-            im = databatch
-
-            # apply P-Net detector
-            if self.pnet_detector is None:
-                raise ValueError('P-Net detector is None')
-
-            st = time.time()
-            boxes, boxes_c, landmark = self.detect_pnet(im)
-            elapsed_time[0] += time.time() - st
-
-            if boxes_c is None:
-                print("boxes_c is None...")
-                all_boxes.append(empty_array)
-                landmarks.append(empty_array)
-                continue
-
-            # apply R-Net detector
-            if self.rnet_detector:
-                st = time.time()
-                boxes, boxes_c, landmark = self.detect_rnet(im, boxes_c)
-                elapsed_time[1] += time.time() - st
-
-                if boxes_c is None:
-                    all_boxes.append(empty_array)
-                    landmarks.append(empty_array)
-                    continue
-
-            # apply O-Net detector
-            if self.onet_detector:
-                st = time.time()
-                boxes, boxes_c, landmark = self.detect_onet(im, boxes_c)
-                elapsed_time[2] += time.time() - st
-                if boxes_c is None:
-                    all_boxes.append(empty_array)
-                    landmarks.append(empty_array)
-                    continue
-
-            all_boxes.append(boxes_c)
-            landmark = [1]
-            landmarks.append(landmark)
-
-        print('number of images', num_of_img)
-        print('time cost in average {:.3f}'.format(sum(elapsed_time)/num_of_img))
-        print('pnet {:.3f}, rnet {:.3f}, onet {:.3f}'.format(elapsed_time[0]/num_of_img, elapsed_time[1]/num_of_img, elapsed_time[2]/num_of_img))
-        print('boxes length:', len(all_boxes))
-        return all_boxes, landmarks
-
-    def detect_single_image(self, im):
+    def detect(self, im):
         empty_array = np.array([])
 
         # apply P-Net detector
@@ -489,7 +380,7 @@ class MTCNN:
         return boxes_c, landmark
 
 
-def py_nms(dets, thresh, mode='union'):
+def nms(dets, thresh, mode='union'):
     """
     greedily select boxes with high confidence
     keep boxes overlap <= thresh
