@@ -4,6 +4,7 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import cv2
 import time
+import pathlib as plib
 
 
 def write_image(image, filename, prefix=None):
@@ -48,7 +49,7 @@ class ImageLoader:
                       format(self.counter, self.size, elapsed_time), end='')
                 self.start_time = time.time()
 
-            self.path = os.path.join(str(self.prefix), self.data[self.counter])
+            self.path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
             image = read_image(self.path)
 
             return self.path, image
