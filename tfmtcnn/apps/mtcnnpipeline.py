@@ -9,10 +9,10 @@ from models.train import train
 
 
 # default directory to save train data
-basedir = plib.Path(os.pardir).joinpath('dbase').absolute()
+dbasedir = plib.Path(os.pardir).joinpath(os.pardir, os.pardir, 'dbase').absolute()
 
 # default directory to save trained nets
-netdir = plib.Path(os.pardir).joinpath('mtcnn').absolute()
+mtcnndir = plib.Path(os.pardir).joinpath(os.pardir, os.pardir, 'mtcnn').absolute()
 
 
 class DBNet:
@@ -27,35 +27,35 @@ def main():
     seed = None
 
     # config for input wider and lfw data
-    dbwider = wider.DBWider(basedir.joinpath('wider'))
-    dblfw = lfw.DBLFW(basedir.joinpath('lfw'))
+    dbwider = wider.DBWider(dbasedir.joinpath('wider'))
+    dblfw = lfw.DBLFW(dbasedir.joinpath('lfw'))
 
     # initialize config for datasets and nets
     pnet = PNet.Config()
-    pnet.dbase = DBNet(basedir, dirname='PNet', label='pnet')
-    pnet.prefix = netdir.joinpath('PNet', 'pnet')
+    pnet.dbase = DBNet(dbasedir, dirname='PNet', label='pnet')
+    pnet.prefix = mtcnndir.joinpath('PNet', 'pnet')
 
     rnet = RNet.Config()
-    rnet.dbase = DBNet(basedir, dirname='RNet', label='rnet')
-    rnet.prefix = netdir.joinpath('RNet', 'rnet')
+    rnet.dbase = DBNet(dbasedir, dirname='RNet', label='rnet')
+    rnet.prefix = mtcnndir.joinpath('RNet', 'rnet')
 
     onet = ONet.Config()
-    onet.dbase = DBNet(basedir, dirname='ONet', label='onet')
-    onet.prefix = netdir.joinpath('ONet', 'onet')
+    onet.dbase = DBNet(dbasedir, dirname='ONet', label='onet')
+    onet.prefix = mtcnndir.joinpath('ONet', 'onet')
 
     # ------------------------------------------------------------------------------------------------------------------
     # train P-Net (prediction net)
 
     # prepare train data
-    wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
-    lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
+    # wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
+    # lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
 
     # save tf record files
-    tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
+    # tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
 
     # train
     train(pnet, tfprefix=pnet.dbase.tfprefix, prefix=pnet.prefix, seed=seed)
-
+    exit(0)
     # ------------------------------------------------------------------------------------------------------------------
     # train R-Net (refinement net)
 
