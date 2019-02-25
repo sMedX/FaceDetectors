@@ -36,6 +36,7 @@ class ImageLoader:
         self.display = display
         self.size = len(data)
         self.prefix = str(prefix)
+        self.path = None
 
     def __next__(self):
         self.counter += 1
@@ -47,9 +48,10 @@ class ImageLoader:
                       format(self.counter, self.size, elapsed_time), end='')
                 self.start_time = time.time()
 
-            image = read_image(str(self.data[self.counter]), prefix=self.prefix)
+            self.path = os.path.join(str(self.prefix), self.data[self.counter])
+            image = read_image(self.path)
 
-            return image
+            return self.path, image
         else:
             print('\rnumber of processed images {}'.format(self.size))
             raise StopIteration
