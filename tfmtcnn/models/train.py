@@ -122,9 +122,11 @@ def train(config, tfprefix, prefix, display=100, seed=None):
 
     # visualize some variables
     tf.summary.scalar('cls_loss', net.cls_loss)
-    tf.summary.scalar('bbox_loss', net.bbox_loss)
-    tf.summary.scalar('landmark_loss', net.landmark_loss)
-    tf.summary.scalar('cls_accuracy', net.accuracy)
+    tf.summary.scalar('bbox', net.bbox_loss)
+    tf.summary.scalar('landmark', net.landmark_loss)
+    tf.summary.scalar('accuracy', net.accuracy)
+    tf.summary.scalar('precision', net.precision)
+    tf.summary.scalar('recall', net.recall)
     tf.summary.scalar('total_loss', loss)
     summary_op = tf.summary.merge_all()
 
@@ -159,13 +161,14 @@ def train(config, tfprefix, prefix, display=100, seed=None):
             final = (it+1) == number_of_iterations
 
             if (it+1) % display == 0 or final:
-                fetches = (net.cls_loss, net.bbox_loss, net.landmark_loss, net.l2_loss, net.accuracy, loss, lr_op)
+                fetches = (net.cls_loss, net.bbox_loss, net.landmark_loss, net.l2_loss, net.accuracy, net.precision, net.recall, loss, lr_op)
+
                 values = sess.run(fetches, feed_dict={input_image: image_batch_array,
                                                       label: label_batch_array,
                                                       bbox_target: bbox_batch_array,
                                                       landmark_target: landmark_batch_array})
 
-                names = ('cls loss', 'bbox loss', 'landmark loss', 'l2 loss', 'accuracy', 'total loss', 'lr')
+                names = ('cls loss', 'bbox loss', 'landmark loss', 'l2 loss', 'accuracy', 'precision', 'recall', 'total loss', 'lr')
                 info = '{}: iteration: {}/{}'.format(datetime.now(), it + 1, number_of_iterations)
                 for name, value in zip(names, values):
                     info += ', {}: {:0.5f}'.format(name, value)

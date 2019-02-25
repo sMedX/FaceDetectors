@@ -72,9 +72,14 @@ class ONet:
             if training:
                 self.cls_loss = cls_ohem(self.cls_prob, label)
                 self.bbox_loss = bbox_ohem(self.bbox_pred, bbox_target, label)
-                self.accuracy = accuracy(self.cls_prob, label)
                 self.landmark_loss = landmark_ohem(self.landmark_pred, landmark_target, label)
                 self.l2_loss = tf.add_n(slim.losses.get_regularization_losses())
+
+                tp, tn, fp, fn = contingency_table(self.cls_prob, label)
+
+                self.accuracy = tf.divide(tp + tn, tp + tn + fp + fn, name='accuracy')
+                self.precision = tf.divide(tp, tp + fp, name='precision')
+                self.recall = tf.divide(tp, tp + fn, name='recall')
 
     def loss(self, config):
         loss = config.cls_loss_factor * self.cls_loss + \
