@@ -109,22 +109,20 @@ def bbox_ohem(bbox_pred, bbox_target, label):
     return tf.reduce_mean(square_error)
 
 
-def landmark_ohem(landmark_pred,landmark_target,label):
-    '''
+def landmark_ohem(landmark_pred, landmark_target, label):
+    """
 
     :param landmark_pred:
     :param landmark_target:
     :param label:
-    :return: mean euclidean loss
-    '''
-    #keep label =-2  then do landmark detection
-    ones = tf.ones_like(label,dtype=tf.float32)
-    zeros = tf.zeros_like(label,dtype=tf.float32)
-    valid_inds = tf.where(tf.equal(label,-2),ones,zeros)
+    :return:
+    """
+    ones = tf.ones_like(label, dtype=tf.float32)
+    zeros = tf.zeros_like(label, dtype=tf.float32)
+    valid_inds = tf.where(tf.equal(label, -2), ones, zeros)
     square_error = tf.square(landmark_pred-landmark_target)
-    square_error = tf.reduce_sum(square_error,axis=1)
+    square_error = tf.reduce_sum(square_error, axis=1)
     num_valid = tf.reduce_sum(valid_inds)
-    #keep_num = tf.cast(num_valid*num_keep_radio,dtype=tf.int32)
     keep_num = tf.cast(num_valid, dtype=tf.int32)
     square_error = square_error*valid_inds
     _, k_index = tf.nn.top_k(square_error, k=keep_num)
