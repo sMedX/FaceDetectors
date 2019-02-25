@@ -359,25 +359,27 @@ class MTCNN:
         if self.pnet_detector is None:
             raise ValueError('P-Net detector is None')
 
-        boxes, boxes_c, landmark = self.detect_pnet(im)
+        boxes, boxes_c, landmarks = self.detect_pnet(im)
 
         if boxes_c is None:
             return empty_array, empty_array
 
         # apply R-Net detector
         if self.rnet_detector:
-            boxes, boxes_c, landmark = self.detect_rnet(im, boxes_c)
+            boxes, boxes_c, landmarks = self.detect_rnet(im, boxes_c)
 
             if boxes_c is None:
                 return empty_array, empty_array
 
         # apply O-Net detector
         if self.onet_detector:
-            boxes, boxes_c, landmark = self.detect_onet(im, boxes_c)
+            boxes, boxes_c, landmarks = self.detect_onet(im, boxes_c)
             if boxes_c is None:
                 return empty_array, empty_array
 
-        return boxes_c, landmark
+        landmarks = np.reshape(landmarks, [landmarks.shape[0], 5, 2])
+
+        return boxes_c, landmarks
 
     @staticmethod
     def nms(dets, thresh, mode='union'):

@@ -32,16 +32,6 @@ detectors = [None, None, None]
 batch_size = [2048, 64, 16]
 
 
-def grouper(iterable, n):
-    """ Collect data into fixed-length chunks or blocks
-    :param iterable:
-    :param n:
-    :return:
-    """
-    args = [iter(iterable)] * n
-    return itertools.zip_longest(*args, fillvalue=None)
-
-
 # load P-net model
 if slide_window:
     detectors[0] = Detector(pnet.Config(), batch_size[0], model_path[0])
@@ -74,6 +64,7 @@ loader = ioutils.ImageLoader(os.listdir(imgdir), prefix=imgdir)
 for path, image in loader:
     print(path)
     boxes, landmarks = mtcnn_detector.detect(image)
+    print(landmarks.shape)
 
     # show rectangles
     for bbox in boxes:
@@ -83,8 +74,8 @@ for path, image in loader:
 
     # show landmarks
     for landmark in landmarks:
-        for i, k in grouper(landmark, 2):
-            cv2.circle(image, (i, k), 3, (0, 0, 255))
+        for x, y in landmark:
+            cv2.circle(image, (x, y), 3, (0, 0, 255))
 
     path = os.path.join(out_dir, os.path.basename(path))
     cv2.imwrite(path, image)
