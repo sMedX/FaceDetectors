@@ -2,7 +2,7 @@
 __author__ = 'Ruslan N. Kosarev'
 
 from tensorflow.contrib import slim
-from .mtcnn_model import *
+from .mtcnn import *
 
 
 # config to train O-Net (output net)

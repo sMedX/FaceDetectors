@@ -1,5 +1,4 @@
 # coding:utf-8
-__author__ = 'Ruslan N. Kosarev'
 
 import numpy as np
 import tensorflow as tf
@@ -15,29 +14,22 @@ def prelu(inputs):
     return pos + neg
 
 
-def dense_to_one_hot(labels_dense,num_classes):
+def dense_to_one_hot(labels_dense, num_classes):
     num_labels = labels_dense.shape[0]
     index_offset = np.arange(num_labels)*num_classes
-    #num_sample*num_classes
-    labels_one_hot = np.zeros((num_labels,num_classes))
+    labels_one_hot = np.zeros((num_labels, num_classes))
     labels_one_hot.flat[index_offset + labels_dense.ravel()] = 1
     return labels_one_hot
-#cls_prob:batch*2
-#label:batch
 
 
 def cls_ohem(cls_prob, label):
     zeros = tf.zeros_like(label)
-    #label=-1 --> label=0net_factory
-
-    #pos -> 1, neg -> 0, others -> 0
     label_filter_invalid = tf.where(tf.less(label,0), zeros, label)
     num_cls_prob = tf.size(cls_prob)
     cls_prob_reshape = tf.reshape(cls_prob,[num_cls_prob,-1])
     label_int = tf.cast(label_filter_invalid,tf.int32)
     # get the number of rows of class_prob
     num_row = tf.to_int32(cls_prob.get_shape()[0])
-    #row = [0,2,4.....]
     row = tf.range(num_row)*2
     indices_ = row + label_int
     label_prob = tf.squeeze(tf.gather(cls_prob_reshape, indices_))
@@ -50,13 +42,12 @@ def cls_ohem(cls_prob, label):
     num_valid = tf.reduce_sum(valid_inds)
 
     keep_num = tf.cast(num_valid*num_keep_radio,dtype=tf.int32)
-    #FILTER OUT PART AND LANDMARK DATA
     loss = loss * valid_inds
-    loss,_ = tf.nn.top_k(loss, k=keep_num)
+    loss, _ = tf.nn.top_k(loss, k=keep_num)
     return tf.reduce_mean(loss)
 
 
-def bbox_ohem_smooth_L1_loss(bbox_pred,bbox_target,label):
+def bbox_ohem_smooth_l1_loss(bbox_pred,bbox_target,label):
     sigma = tf.constant(1.0)
     threshold = 1.0/(sigma**2)
     zeros_index = tf.zeros_like(label, dtype=tf.float32)
@@ -88,7 +79,7 @@ def bbox_ohem_orginal(bbox_pred,bbox_target,label):
 
 
 #label=1 or label=-1 then do regression
-def bbox_ohem(bbox_pred,bbox_target,label):
+def bbox_ohem(bbox_pred, bbox_target, label):
     '''
 
     :param bbox_pred:
@@ -97,19 +88,19 @@ def bbox_ohem(bbox_pred,bbox_target,label):
     :return: mean euclidean loss for all the pos and part examples
     '''
     zeros_index = tf.zeros_like(label, dtype=tf.float32)
-    ones_index = tf.ones_like(label,dtype=tf.float32)
+    ones_index = tf.ones_like(label, dtype=tf.float32)
     # keep pos and part examples
     valid_inds = tf.where(tf.equal(tf.abs(label), 1),ones_index,zeros_index)
-    #(batch,)
-    #calculate square sum
+    # (batch,)
+    # calculate square sum
     square_error = tf.square(bbox_pred-bbox_target)
-    square_error = tf.reduce_sum(square_error,axis=1)
-    #keep_num scalar
+    square_error = tf.reduce_sum(square_error, axis=1)
+    # keep_num scalar
     num_valid = tf.reduce_sum(valid_inds)
-    #keep_num = tf.cast(num_valid*num_keep_radio,dtype=tf.int32)
+    # keep_num = tf.cast(num_valid*num_keep_radio,dtype=tf.int32)
     # count the number of pos and part examples
     keep_num = tf.cast(num_valid, dtype=tf.int32)
-    #keep valid index square_error
+    # keep valid index square_error
     square_error = square_error*valid_inds
     # keep top k examples, k equals to the number of positive examples
     _, k_index = tf.nn.top_k(square_error, k=keep_num)
