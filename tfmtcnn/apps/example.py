@@ -63,9 +63,7 @@ def main():
     loader = ioutils.ImageLoader(os.listdir(str(imgdir)), prefix=imgdir)
 
     for path, image in loader:
-        print(path)
         boxes, landmarks = detector.detect(image)
-        print(landmarks.shape)
 
         # show rectangles
         for bbox in boxes:
