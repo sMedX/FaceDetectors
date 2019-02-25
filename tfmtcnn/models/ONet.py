@@ -20,6 +20,10 @@ class Config:
         self.part_ratio = 1
         self.landmark_ratio = 1
 
+        self.cls_loss_factor = 1.0
+        self.bbox_loss_factor = 0.5
+        self.landmark_loss_factor = 0.5
+
         self.factory = ONet
 
         # config for database to train net
@@ -71,3 +75,11 @@ class ONet:
                 self.accuracy = cal_accuracy(self.cls_prob, label)
                 self.landmark_loss = landmark_ohem(self.landmark_pred, landmark_target, label)
                 self.l2_loss = tf.add_n(slim.losses.get_regularization_losses())
+
+    def loss(self, config):
+        loss = config.cls_loss_factor * self.cls_loss + \
+               config.bbox_loss_factor * self.bbox_loss + \
+               config.landmark_loss_factor * self.landmark_loss + \
+               self.l2_loss
+
+        return loss
