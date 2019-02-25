@@ -20,6 +20,10 @@ class Config:
         self.part_ratio = 1
         self.landmark_ratio = 1
 
+        self.cls_loss_factor = 1.0
+        self.bbox_loss_factor = 0.5
+        self.landmark_loss_factor = 0.5
+
         self.factory = PNet
 
         # config for database to train net
