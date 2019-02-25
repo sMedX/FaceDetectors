@@ -26,29 +26,6 @@ def train_model(loss, config):
     return train_op, lr_op
 
 
-'''
-certain samples mirror
-def random_flip_images(image_batch,label_batch,landmark_batch):
-    num_images = image_batch.shape[0]
-    random_number = npr.choice([0,1],num_images,replace=True)
-    #the index of image needed to flip
-    indexes = np.where(random_number>0)[0]
-    fliplandmarkindexes = np.where(label_batch[indexes]==-2)[0]
-    
-    #random flip    
-    for i in indexes:
-        cv2.flip(image_batch[i],1,image_batch[i])
-    #pay attention: flip landmark    
-    for i in fliplandmarkindexes:
-        landmark_ = landmark_batch[i].reshape((-1,2))
-        landmark_ = np.asarray([(1-x, y) for (x, y) in landmark_])
-        landmark_[[0, 1]] = landmark_[[1, 0]]#left eye<->right eye
-        landmark_[[3, 4]] = landmark_[[4, 3]]#left mouth<->right mouth        
-        landmark_batch[i] = landmark_.ravel()
-    return image_batch,landmark_batch
-'''
-
-
 # all mini-batch mirror
 def random_flip_images(image_batch, label_batch, landmark_batch):
     # mirror
@@ -102,9 +79,9 @@ def train(config, tfprefix, prefix, display=100, seed=None):
         logdir.mkdir()
 
     image_size = config.image_size
-    radio_cls_loss = 1.0
-    radio_bbox_loss = 0.5
-    radio_landmark_loss = 0.5
+    cls_loss_factor = 1.0
+    bbox_loss_factor = 0.5
+    landmark_loss_factor = 0.5
 
     batch_size = config.batch_size
 
@@ -133,7 +110,7 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     net = config.factory(input_image, label, bbox_target, landmark_target, training=True)
 
     # initialize total loss
-    total_loss = radio_cls_loss * net.cls_loss + radio_bbox_loss * net.bbox_loss + radio_landmark_loss * net.landmark_loss + net.l2_loss
+    total_loss = cls_loss_factor * net.cls_loss + bbox_loss_factor * net.bbox_loss + landmark_loss_factor * net.landmark_loss + net.l2_loss
     train_op, lr_op = train_model(total_loss, config)
 
     init = tf.global_variables_initializer()
