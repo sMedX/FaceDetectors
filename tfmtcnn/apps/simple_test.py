@@ -51,11 +51,11 @@ def main():
     if test_mode is 'ONet':
         detectors[2] = Detector(onet.Config(), batch_size[2], model_path[2])
 
-    mtcnn_detector = MTCNN(detectors=detectors,
-                           min_face_size=min_face_size,
-                           stride=stride,
-                           threshold=threshold,
-                           slide_window=slide_window)
+    mtcnn = MTCNN(detectors=detectors,
+                  min_face_size=min_face_size,
+                  stride=stride,
+                  threshold=threshold,
+                  slide_window=slide_window)
 
     if not outdir.exists():
         outdir.mkdir()
@@ -64,7 +64,7 @@ def main():
 
     for path, image in loader:
         print(path)
-        boxes, landmarks = mtcnn_detector.detect(image)
+        boxes, landmarks = mtcnn.detect(image)
         print(landmarks.shape)
 
         # show rectangles
