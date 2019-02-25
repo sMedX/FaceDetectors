@@ -79,9 +79,9 @@ def train(config, tfprefix, prefix, display=100, seed=None):
         logdir.mkdir()
 
     image_size = config.image_size
-    cls_loss_factor = 1.0
-    bbox_loss_factor = 0.5
-    landmark_loss_factor = 0.5
+    # cls_loss_factor = 1.0
+    # bbox_loss_factor = 0.5
+    # landmark_loss_factor = 0.5
 
     batch_size = config.batch_size
 
@@ -109,9 +109,9 @@ def train(config, tfprefix, prefix, display=100, seed=None):
 
     net = config.factory(input_image, label, bbox_target, landmark_target, training=True)
 
-    # initialize total loss
-    total_loss = cls_loss_factor * net.cls_loss + bbox_loss_factor * net.bbox_loss + landmark_loss_factor * net.landmark_loss + net.l2_loss
-    train_op, lr_op = train_model(total_loss, config)
+    # initialize loss
+    loss = net.loss(config)
+    train_op, lr_op = train_model(loss, config)
 
     init = tf.global_variables_initializer()
     sess = tf.Session()
@@ -125,7 +125,7 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     tf.summary.scalar('bbox_loss', net.bbox_loss)
     tf.summary.scalar('landmark_loss', net.landmark_loss)
     tf.summary.scalar('cls_accuracy', net.accuracy)
-    tf.summary.scalar('total_loss', total_loss)
+    tf.summary.scalar('total_loss', loss)
     summary_op = tf.summary.merge_all()
 
     writer = tf.summary.FileWriter(str(logdir), sess.graph)
@@ -159,7 +159,7 @@ def train(config, tfprefix, prefix, display=100, seed=None):
             final = (it+1) == number_of_iterations
 
             if (it+1) % display == 0 or final:
-                fetches = (net.cls_loss, net.bbox_loss, net.landmark_loss, net.l2_loss, net.accuracy, total_loss, lr_op)
+                fetches = (net.cls_loss, net.bbox_loss, net.landmark_loss, net.l2_loss, net.accuracy, loss, lr_op)
                 values = sess.run(fetches, feed_dict={input_image: image_batch_array,
                                                       label: label_batch_array,
                                                       bbox_target: bbox_batch_array,
