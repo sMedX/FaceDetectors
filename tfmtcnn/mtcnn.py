@@ -223,7 +223,7 @@ class MTCNN:
             if boxes.size == 0:
                 continue
             # get the index from non-maximum s
-            keep = nms(boxes[:, :5], 0.5, 'Union')
+            keep = self.nms(boxes[:, :5], 0.5, 'Union')
             boxes = boxes[keep]
             all_boxes.append(boxes)
 
@@ -233,7 +233,7 @@ class MTCNN:
         all_boxes = np.vstack(all_boxes)
 
         # merge the detection from first stage
-        keep = nms(all_boxes[:, 0:5], 0.7, 'Union')
+        keep = self.nms(all_boxes[:, 0:5], 0.7, 'Union')
         all_boxes = all_boxes[keep]
         boxes = all_boxes[:, :5]
 
@@ -292,7 +292,7 @@ class MTCNN:
         else:
             return None, None, None
 
-        keep = nms(boxes, 0.6)
+        keep = self.nms(boxes, 0.6)
         boxes = boxes[keep]
         boxes_c = self.calibrate_box(boxes, reg[keep])
         return boxes, boxes_c, None
@@ -346,8 +346,8 @@ class MTCNN:
         landmark[:, 1::2] = (np.tile(h, (5, 1)) * landmark[:, 1::2].T + np.tile(boxes[:, 1], (5, 1)) - 1).T
         boxes_c = self.calibrate_box(boxes, reg)
 
-        boxes = boxes[nms(boxes, 0.6, "Minimum")]
-        keep = nms(boxes_c, 0.6, "Minimum")
+        boxes = boxes[self.nms(boxes, 0.6, "Minimum")]
+        keep = self.nms(boxes_c, 0.6, "Minimum")
         boxes_c = boxes_c[keep]
         landmark = landmark[keep]
         return boxes, boxes_c, landmark
@@ -379,45 +379,45 @@ class MTCNN:
 
         return boxes_c, landmark
 
+    @staticmethod
+    def nms(dets, thresh, mode='union'):
+        """
+        greedily select boxes with high confidence
+        keep boxes overlap <= thresh
+        rule out overlap > thresh
+        :param dets: [[x1, y1, x2, y2 score]]
+        :param thresh: retain overlap <= thresh
+        :return: indexes to keep
+        """
+        x1 = dets[:, 0]
+        y1 = dets[:, 1]
+        x2 = dets[:, 2]
+        y2 = dets[:, 3]
+        scores = dets[:, 4]
 
-def nms(dets, thresh, mode='union'):
-    """
-    greedily select boxes with high confidence
-    keep boxes overlap <= thresh
-    rule out overlap > thresh
-    :param dets: [[x1, y1, x2, y2 score]]
-    :param thresh: retain overlap <= thresh
-    :return: indexes to keep
-    """
-    x1 = dets[:, 0]
-    y1 = dets[:, 1]
-    x2 = dets[:, 2]
-    y2 = dets[:, 3]
-    scores = dets[:, 4]
+        areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+        order = scores.argsort()[::-1]
 
-    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
-    order = scores.argsort()[::-1]
+        keep = []
+        while order.size > 0:
+            i = order[0]
+            keep.append(i)
+            xx1 = np.maximum(x1[i], x1[order[1:]])
+            yy1 = np.maximum(y1[i], y1[order[1:]])
+            xx2 = np.minimum(x2[i], x2[order[1:]])
+            yy2 = np.minimum(y2[i], y2[order[1:]])
 
-    keep = []
-    while order.size > 0:
-        i = order[0]
-        keep.append(i)
-        xx1 = np.maximum(x1[i], x1[order[1:]])
-        yy1 = np.maximum(y1[i], y1[order[1:]])
-        xx2 = np.minimum(x2[i], x2[order[1:]])
-        yy2 = np.minimum(y2[i], y2[order[1:]])
+            w = np.maximum(0.0, xx2 - xx1 + 1)
+            h = np.maximum(0.0, yy2 - yy1 + 1)
+            inter = w * h
+            if mode.lower() == 'union':
+                ovr = inter / (areas[i] + areas[order[1:]] - inter)
+            elif mode.lower() == 'minimum':
+                ovr = inter / np.minimum(areas[i], areas[order[1:]])
+            else:
+                raise ValueError('incorrect input mode \'{}\', must be union or minimum'.format(mode))
 
-        w = np.maximum(0.0, xx2 - xx1 + 1)
-        h = np.maximum(0.0, yy2 - yy1 + 1)
-        inter = w * h
-        if mode.lower() == 'union':
-            ovr = inter / (areas[i] + areas[order[1:]] - inter)
-        elif mode.lower() == 'minimum':
-            ovr = inter / np.minimum(areas[i], areas[order[1:]])
-        else:
-            raise ValueError('incorrect input mode \'{}\', must be union or minimum'.format(mode))
+            inds = np.where(ovr <= thresh)[0]
+            order = order[inds + 1]
 
-        inds = np.where(ovr <= thresh)[0]
-        order = order[inds + 1]
-
-    return keep
+        return keep
