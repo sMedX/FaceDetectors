@@ -3,27 +3,28 @@ import numpy as np
 
 
 class Detector:
-    def __init__(self, net_factory, data_size, batch_size, model_path):
+    def __init__(self, config, batch_size, model_path):
+        size = config.image_size
+
         graph = tf.Graph()
         with graph.as_default():
-            self.image_op = tf.placeholder(tf.float32, shape=[batch_size, data_size, data_size, 3], name='input_image')
-            net = net_factory(self.image_op, training=False)
+            self.image_op = tf.placeholder(tf.float32, shape=[batch_size, size, size, 3], name='input_image')
+            net = config.factory(self.image_op, training=False)
             self.cls_prob = net.cls_prob
             self.bbox_pred = net.bbox_pred
             self.landmark_pred = net.landmark_pred
             self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
                                                          gpu_options=tf.GPUOptions(allow_growth=True)))
             saver = tf.train.Saver()
-            #check whether the dictionary is valid
             model_dict = '/'.join(model_path.split('/')[:-1])
             ckpt = tf.train.get_checkpoint_state(model_dict)
             print(model_path)
             readstate = ckpt and ckpt.model_checkpoint_path
-            assert  readstate, "the params dictionary is not valid"
+            assert readstate, "the params dictionary is not valid"
             print("restore models' param")
             saver.restore(self.sess, model_path)
 
-        self.data_size = data_size
+        self.data_size = size
         self.batch_size = batch_size
     #rnet and onet minibatch(test)
     def predict(self, databatch):

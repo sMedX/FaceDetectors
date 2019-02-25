@@ -2,7 +2,7 @@
 __author__ = 'Ruslan N. Kosarev'
 
 from tensorflow.contrib import slim
-from train_models.mtcnn_model import *
+from .mtcnn_model import *
 
 
 # config to train P-Net (prediction net)

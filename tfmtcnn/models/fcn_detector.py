@@ -5,7 +5,7 @@ import tensorflow as tf
 
 
 class FcnDetector:
-    def __init__(self, net_factory, model_path):
+    def __init__(self, config, model_path):
         # create a graph
         graph = tf.Graph()
         with graph.as_default():
@@ -13,7 +13,7 @@ class FcnDetector:
             self.width_op = tf.placeholder(tf.int32, name='image_width')
             self.height_op = tf.placeholder(tf.int32, name='image_height')
             image_reshape = tf.reshape(self.image_op, [1, self.height_op, self.width_op, 3])
-            net = net_factory(image_reshape, training=False)
+            net = config.factory(image_reshape, training=False)
             self.cls_prob = net.cls_pro_test
             self.bbox_pred = net.bbox_pred_test
             
