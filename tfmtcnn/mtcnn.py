@@ -19,7 +19,7 @@ class MTCNN:
         self.onet_detector = detectors[2]
         self.min_face_size = min_face_size
         self.stride = stride
-        self.thresh = threshold
+        self.threshold = threshold
         self.scale_factor = scale_factor
         self.slide_window = slide_window
 
@@ -199,7 +199,7 @@ class MTCNN:
             # class_prob andd bbox_pred
             cls_cls_map, reg = self.pnet_detector.predict(resized)
             # boxes: num*9(x1,y1,x2,y2,score,x1_offset,y1_offset,x2_offset,y2_offset)
-            boxes = self.generate_bbox(cls_cls_map[:, :, 1], reg, current_scale, self.thresh[0])
+            boxes = self.generate_bbox(cls_cls_map[:, :, 1], reg, current_scale, self.threshold[0])
             current_scale *= self.scale_factor
             resized = self.processed_image(img, current_scale)
             current_height, current_width, _ = resized.shape
@@ -268,7 +268,7 @@ class MTCNN:
         # landmark: num_data*10
         cls_scores, reg, _ = self.rnet_detector.predict(cropped_ims)
         cls_scores = cls_scores[:, 1]
-        keep_inds = np.where(cls_scores > self.thresh[1])[0]
+        keep_inds = np.where(cls_scores > self.threshold[1])[0]
         if len(keep_inds) > 0:
             boxes = dets[keep_inds]
             boxes[:, 4] = cls_scores[keep_inds]
@@ -313,7 +313,7 @@ class MTCNN:
         cls_scores, reg, landmark = self.onet_detector.predict(cropped_ims)
         # prob belongs to face
         cls_scores = cls_scores[:, 1]
-        keep_inds = np.where(cls_scores > self.thresh[2])[0]
+        keep_inds = np.where(cls_scores > self.threshold[2])[0]
         if len(keep_inds) > 0:
             # pickout filtered box
             boxes = dets[keep_inds]
