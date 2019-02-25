@@ -2,7 +2,6 @@
 __author__ = 'Ruslan N. Kosarev'
 
 import cv2
-import time
 import numpy as np
 
 
@@ -113,20 +112,10 @@ class MTCNN:
         return boundingbox.T
 
     def processed_image(self, img, scale):
-        '''
-        rescale/resize the image according to the scale
-        :param img: image
-        :param scale:
-        :return: resized image
-        '''
-        height, width, channels = img.shape
-        new_height = int(height * scale)  # resized new height
-        new_width = int(width * scale)  # resized new width
-        new_dim = (new_width, new_height)
-        img_resized = cv2.resize(img, new_dim, interpolation=cv2.INTER_LINEAR)  # resized image
-        # don't understand this operation
-        img_resized = (img_resized - 127.5) / 128
-        return img_resized
+        size = (int(img.shape[0]*scale), int(img.shape[1]*scale))
+        resized = cv2.resize(img, size[::-1], interpolation=cv2.INTER_LINEAR)  # resized image
+        resized = (resized - 127.5) / 128
+        return resized
 
     def pad(self, bboxes, w, h):
         """
@@ -181,7 +170,7 @@ class MTCNN:
 
         return return_list
 
-    def detect_pnet(self, im):
+    def detect_pnet(self, img):
         """Get face candidates through pnet
 
         Parameters:
@@ -196,32 +185,28 @@ class MTCNN:
         boxes_c: numpy array
             boxes after calibration
         """
-        h, w, c = im.shape
         net_size = 12
 
         current_scale = float(net_size) / self.min_face_size  # find initial scale
-        # print("current_scale", net_size, self.min_face_size, current_scale)
-        # risize image using current_scale
-        im_resized = self.processed_image(im, current_scale)
-        current_height, current_width, _ = im_resized.shape
-        #print('current height and width:',current_height,current_width)
-        # fcn
+        resized = self.processed_image(img, current_scale)
+        current_height, current_width, _ = resized.shape
+
         all_boxes = list()
         while min(current_height, current_width) > net_size:
             # return the result predicted by pnet
             # cls_cls_map : H*w*2
             # reg: H*w*4
             # class_prob andd bbox_pred
-            cls_cls_map, reg = self.pnet_detector.predict(im_resized)
+            cls_cls_map, reg = self.pnet_detector.predict(resized)
             # boxes: num*9(x1,y1,x2,y2,score,x1_offset,y1_offset,x2_offset,y2_offset)
             boxes = self.generate_bbox(cls_cls_map[:, :, 1], reg, current_scale, self.thresh[0])
-            # scale_factor is 0.79 in default
             current_scale *= self.scale_factor
-            im_resized = self.processed_image(im, current_scale)
-            current_height, current_width, _ = im_resized.shape
+            resized = self.processed_image(img, current_scale)
+            current_height, current_width, _ = resized.shape
 
             if boxes.size == 0:
                 continue
+
             # get the index from non-maximum s
             keep = self.nms(boxes[:, :5], 0.5, 'Union')
             boxes = boxes[keep]
