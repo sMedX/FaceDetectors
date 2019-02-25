@@ -44,7 +44,7 @@ def main():
         detectors[0] = FcnDetector(pnet.Config(), model_path[0])
 
     # load R-net model
-    if test_mode in ['RNet', 'ONet']:
+    if test_mode in ('RNet', 'ONet'):
         detectors[1] = Detector(rnet.Config(), batch_size[1], model_path[1])
 
     # load O-net model
