@@ -69,7 +69,7 @@ class RNet:
             if training:
                 self.cls_loss = cls_ohem(self.cls_prob, label)
                 self.bbox_loss = bbox_ohem(self.bbox_pred, bbox_target, label)
-                self.accuracy = cal_accuracy(self.cls_prob, label)
+                self.accuracy = accuracy(self.cls_prob, label)
                 self.landmark_loss = landmark_ohem(self.landmark_pred, landmark_target, label)
                 self.l2_loss = tf.add_n(slim.losses.get_regularization_losses())
 

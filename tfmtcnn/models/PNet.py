@@ -72,7 +72,7 @@ class PNet:
                 self.bbox_loss = bbox_ohem(bbox_pred, bbox_target, label)
                 landmark_pred = tf.squeeze(landmark_pred, [1, 2], name='landmark_pred')
                 self.landmark_loss = landmark_ohem(landmark_pred, landmark_target, label)
-                self.accuracy = cal_accuracy(cls_prob, label)
+                self.accuracy = accuracy(cls_prob, label)
                 self.l2_loss = tf.add_n(slim.losses.get_regularization_losses())
             else:
                 self.cls_pro_test = tf.squeeze(conv4_1, axis=0)
