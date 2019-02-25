@@ -47,15 +47,15 @@ def main():
     # train P-Net (prediction net)
 
     # prepare train data
-    # wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
-    # lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
+    wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
+    lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
 
     # save tf record files
-    # tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
+    tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
 
     # train
     train(pnet, tfprefix=pnet.dbase.tfprefix, prefix=pnet.prefix, seed=seed)
-    exit(0)
+
     # ------------------------------------------------------------------------------------------------------------------
     # train R-Net (refinement net)
 
