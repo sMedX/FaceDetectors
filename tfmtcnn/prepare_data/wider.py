@@ -4,8 +4,8 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import h5py
 import numpy as np
-from prepare_data import ioutils, h5utils
-from prepare_data.utils import IoU
+from tfmtcnn.prepare_data import ioutils, h5utils
+from tfmtcnn.prepare_data.utils import IoU
 import cv2
 
 dtype = np.dtype([('path', h5py.special_dtype(vlen=str)),

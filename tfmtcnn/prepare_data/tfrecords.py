@@ -4,7 +4,7 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import numpy as np
 import tensorflow as tf
-from prepare_data import h5utils, ioutils
+from tfmtcnn.prepare_data import h5utils, ioutils
 
 
 def getfilename(prefix, key):

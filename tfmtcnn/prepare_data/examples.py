@@ -5,13 +5,11 @@ import os
 import numpy as np
 import cv2
 
-from prepare_data import wider
-from models.detector import Detector
-from models.fcn_detector import FcnDetector
-from mtcnn import MTCNN
-from prepare_data import ioutils, h5utils
-from prepare_data.utils import convert_to_square
-from prepare_data.data_utils import IoU
+from tfmtcnn.prepare_data import wider
+from tfmtcnn.prepare_data import ioutils, h5utils
+from tfmtcnn.prepare_data.utils import convert_to_square
+from tfmtcnn.prepare_data.data_utils import IoU
+from tfmtcnn.mtcnn import MTCNN
 
 
 def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, stride=2, slide_window=False):
