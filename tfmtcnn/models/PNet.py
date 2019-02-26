@@ -1,13 +1,14 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
+import pathlib as plib
 from tensorflow.contrib import slim
 from .mtcnn import *
 
 
 # config to train P-Net (prediction net)
-class Config:
-    def __init__(self):
+class Factory:
+    def __init__(self, model_path=None):
         self.image_size = 12
         self.number_of_epochs = 30
         self.number_of_iterations = 5000
@@ -31,6 +32,13 @@ class Config:
 
         # prefix to save trained net
         self.prefix = None
+
+        self.model_path = model_path
+
+    @property
+    def detector(self):
+        detector = Detector(model_path=self.model_path)
+        return detector
 
 
 # construct PNet
@@ -94,3 +102,41 @@ class PNet:
                self.l2_loss
 
         return loss
+
+
+class Detector:
+    def __init__(self, model_path=None):
+        # create a graph
+        graph = tf.Graph()
+        with graph.as_default():
+            self.image_op = tf.placeholder(tf.float32, name='input_image')
+            self.width_op = tf.placeholder(tf.int32, name='image_width')
+            self.height_op = tf.placeholder(tf.int32, name='image_height')
+            image_reshape = tf.reshape(self.image_op, [1, self.height_op, self.width_op, 3])
+
+            net = PNet(image_reshape, training=False)
+            self.cls_prob = net.cls_pro_test
+            self.bbox_pred = net.bbox_pred_test
+
+            self.sess = tf.Session(
+                config=tf.ConfigProto(allow_soft_placement=True, gpu_options=tf.GPUOptions(allow_growth=True)))
+            saver = tf.train.Saver()
+
+            if model_path is None:
+                model_path = plib.Path(__file__).parent.joinpath('parameters', 'pnet', 'pnet')
+
+            try:
+                saver.restore(self.sess, str(model_path))
+            except:
+                raise IOError('unable restore parameters from {}'.format(str(model_path)))
+
+            print('restore parameters from the path {}'.format(str(model_path)))
+
+    def predict(self, databatch):
+        height, width, _ = databatch.shape
+        cls_prob, bbox = self.sess.run([self.cls_prob, self.bbox_pred],
+                                       feed_dict={self.image_op: databatch,
+                                                  self.width_op: width,
+                                                  self.height_op: height})
+        return cls_prob, bbox
+

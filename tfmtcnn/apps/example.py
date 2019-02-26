@@ -7,11 +7,9 @@ import pathlib as plib
 import cv2
 
 from tfmtcnn.prepare_data import ioutils
-from tfmtcnn.models.detector import Detector
-from tfmtcnn.models.fcn_detector import FcnDetector
-from tfmtcnn.models import PNet as pnet
-from tfmtcnn.models import RNet as rnet
-from tfmtcnn.models import ONet as onet
+from tfmtcnn.models import PNet
+from tfmtcnn.models import RNet
+from tfmtcnn.models import ONet
 from tfmtcnn.mtcnn import MTCNN
 
 imgdir = plib.Path(os.pardir, 'images').absolute()
@@ -25,37 +23,31 @@ prefix = [prefix.joinpath('mtcnn', 'PNet', 'pnet'),
 epochs = [30, 30, 30]
 model_path = ['{}-{}'.format(x, y) for x, y in zip(prefix, epochs)]
 
-test_mode = 'ONet'
+mode = 'ONet'
 threshold = [0.6, 0.7, 0.7]
 min_face_size = 20
 stride = 2
-slide_window = False
-batch_size = [2048, 64, 16]
 
 
 def main():
-
     detectors = [None, None, None]
 
     # load P-net model
-    if slide_window:
-        detectors[0] = Detector(pnet.Config(), batch_size[0], model_path[0])
-    else:
-        detectors[0] = FcnDetector(pnet.Config(), model_path[0])
+    if mode in ('PNet', 'RNet', 'ONet'):
+        detectors[0] = PNet.Factory(model_path=None)  # FcnDetector(pnet.Factory(), model_path=None)
 
     # load R-net model
-    if test_mode in ('RNet', 'ONet'):
-        detectors[1] = Detector(rnet.Config(), batch_size[1], model_path[1])
+    if mode in ('RNet', 'ONet'):
+        detectors[1] = RNet.Factory(model_path=None)  # Detector(rnet.Config(), batch_size[1], model_path[1])
 
     # load O-net model
-    if test_mode is 'ONet':
-        detectors[2] = Detector(onet.Config(), batch_size[2], model_path[2])
+    if mode in ('ONet',):
+        detectors[2] = ONet.Factory(model_path=None)
 
     detector = MTCNN(detectors=detectors,
                      min_face_size=min_face_size,
                      stride=stride,
-                     threshold=threshold,
-                     slide_window=slide_window)
+                     threshold=threshold)
 
     if not outdir.exists():
         outdir.mkdir()

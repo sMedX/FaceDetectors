@@ -11,17 +11,15 @@ class MTCNN:
                  threshold=(0.6, 0.7, 0.7),
                  min_face_size=20,
                  stride=2,
-                 scale_factor=0.79,
-                 slide_window=False):
+                 scale_factor=0.79):
 
-        self.pnet_detector = detectors[0]
-        self.rnet_detector = detectors[1]
-        self.onet_detector = detectors[2]
+        self.pnet_detector = detectors[0].detector
+        self.rnet_detector = detectors[1].detector
+        self.onet_detector = detectors[2].detector
         self.min_face_size = min_face_size
         self.stride = stride
         self.threshold = threshold
         self.scale_factor = scale_factor
-        self.slide_window = slide_window
 
     def convert_to_square(self, bbox):
         """
@@ -362,7 +360,8 @@ class MTCNN:
             if boxes_c is None:
                 return empty_array, empty_array
 
-        landmarks = np.reshape(landmarks, [landmarks.shape[0], 5, 2])
+        if landmarks is not None:
+            landmarks = np.reshape(landmarks, [landmarks.shape[0], 5, 2])
 
         return boxes_c, landmarks
 
