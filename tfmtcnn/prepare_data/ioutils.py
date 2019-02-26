@@ -37,7 +37,6 @@ class ImageLoader:
         self.display = display
         self.size = len(data)
         self.prefix = str(prefix)
-        self.path = None
 
     def __next__(self):
         self.counter += 1
@@ -49,8 +48,7 @@ class ImageLoader:
                       format(self.counter, self.size, elapsed_time), end='')
                 self.start_time = time.time()
 
-            self.path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
-            image = read_image(self.path)
+            image = read_image(self.data[self.counter], prefix=self.prefix)
 
             return image
         else:
@@ -73,7 +71,6 @@ class ImageLoaderWithPath:
         self.display = display
         self.size = len(data)
         self.prefix = str(prefix)
-        self.path = None
 
     def __next__(self):
         self.counter += 1
@@ -85,10 +82,10 @@ class ImageLoaderWithPath:
                       format(self.counter, self.size, elapsed_time), end='')
                 self.start_time = time.time()
 
-            self.path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
-            image = read_image(self.path)
+            path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
+            image = read_image(path)
 
-            return image, self.path
+            return image, path
         else:
             print('\rnumber of processed images {}'.format(self.size))
             raise StopIteration
