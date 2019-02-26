@@ -16,7 +16,7 @@ from tfmtcnn.mtcnn import MTCNN
 
 basedir = plib.Path(os.pardir, os.pardir, os.pardir).absolute()
 imgdir = plib.Path(os.pardir, 'images').absolute()
-outdir = plib.Path(os.pardir, os.pardir, os.pardir, 'results').absolute()
+outdir = basedir.joinpath('results').absolute()
 
 prefix = [basedir.joinpath('mtcnn', 'PNet', 'pnet'),
           basedir.joinpath('mtcnn', 'RNet', 'rnet'),
