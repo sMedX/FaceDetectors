@@ -52,7 +52,7 @@ class ImageLoader:
             self.path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
             image = read_image(self.path)
 
-            return self.path, image
+            return image
         else:
             print('\rnumber of processed images {}'.format(self.size))
             raise StopIteration
