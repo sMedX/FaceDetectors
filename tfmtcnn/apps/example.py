@@ -14,13 +14,13 @@ from tfmtcnn.models import RNet as rnet
 from tfmtcnn.models import ONet as onet
 from tfmtcnn.mtcnn import MTCNN
 
-basedir = plib.Path().joinpath(os.pardir, os.pardir, os.pardir).absolute()
+basedir = plib.Path(os.pardir, os.pardir, os.pardir).absolute()
+imgdir = plib.Path(os.pardir, 'images').absolute()
+outdir = plib.Path(os.pardir, os.pardir, os.pardir, 'results').absolute()
+
 prefix = [basedir.joinpath('mtcnn', 'PNet', 'pnet'),
           basedir.joinpath('mtcnn', 'RNet', 'rnet'),
           basedir.joinpath('mtcnn', 'ONet', 'onet')]
-
-imgdir = plib.Path(os.pardir).joinpath('images').absolute()
-outdir = plib.Path(os.pardir).joinpath(os.pardir, os.pardir, 'results').absolute()
 
 epochs = [30, 30, 30]
 model_path = ['{}-{}'.format(x, y) for x, y in zip(prefix, epochs)]
