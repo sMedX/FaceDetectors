@@ -62,6 +62,42 @@ class ImageLoader:
         return self
 
 
+class ImageLoaderWithPath:
+    def __iter__(self):
+        return self
+
+    def __init__(self, data, prefix=None, display=100):
+        self.counter = -1
+        self.start_time = time.time()
+        self.data = data
+        self.display = display
+        self.size = len(data)
+        self.prefix = str(prefix)
+        self.path = None
+
+    def __next__(self):
+        self.counter += 1
+
+        if self.counter < self.size:
+            if self.counter % self.display == 0:
+                elapsed_time = (time.time() - self.start_time) / self.display
+                print('\rnumber of processed images {}/{}, {:.5f} seconds per image'.
+                      format(self.counter, self.size, elapsed_time), end='')
+                self.start_time = time.time()
+
+            self.path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
+            image = read_image(self.path)
+
+            return image, self.path
+        else:
+            print('\rnumber of processed images {}'.format(self.size))
+            raise StopIteration
+
+    def reset(self):
+        self.counter = -1
+        return self
+
+
 def read_annotation(filename):
 
     if not filename.exists():
