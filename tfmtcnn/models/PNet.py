@@ -113,14 +113,6 @@ class PNet:
                 self.landmark_pred_test = tf.squeeze(landmark_pred, axis=0)
                 print(self.landmark_pred_test)
 
-    def loss(self, config):
-        loss = config.cls_loss_factor * self.cls_loss + \
-               config.bbox_loss_factor * self.bbox_loss + \
-               config.landmark_loss_factor * self.landmark_loss + \
-               self.l2_loss
-
-        return loss
-
 
 class Detector:
     def __init__(self, model_path=None):
