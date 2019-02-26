@@ -6,21 +6,21 @@ import numpy as np
 import pathlib as plib
 import cv2
 
-from prepare_data import ioutils
-from models.detector import Detector
-from models.fcn_detector import FcnDetector
-from models import PNet as pnet
-from models import RNet as rnet
-from models import ONet as onet
-from mtcnn import MTCNN
+from tfmtcnn.prepare_data import ioutils
+from tfmtcnn.models.detector import Detector
+from tfmtcnn.models.fcn_detector import FcnDetector
+from tfmtcnn.models import PNet as pnet
+from tfmtcnn.models import RNet as rnet
+from tfmtcnn.models import ONet as onet
+from tfmtcnn.mtcnn import MTCNN
 
-basedir = plib.Path().joinpath(os.pardir, os.pardir).absolute()
+basedir = plib.Path().joinpath(os.pardir, os.pardir, os.pardir).absolute()
 prefix = [basedir.joinpath('mtcnn', 'PNet', 'pnet'),
           basedir.joinpath('mtcnn', 'RNet', 'rnet'),
           basedir.joinpath('mtcnn', 'ONet', 'onet')]
 
-imgdir = plib.Path('images').absolute()
-outdir = plib.Path(os.pardir).joinpath(os.pardir, 'results').absolute()
+imgdir = plib.Path(os.pardir).joinpath('images').absolute()
+outdir = plib.Path(os.pardir).joinpath(os.pardir, os.pardir, 'results').absolute()
 
 epochs = [30, 30, 30]
 model_path = ['{}-{}'.format(x, y) for x, y in zip(prefix, epochs)]
@@ -60,9 +60,9 @@ def main():
     if not outdir.exists():
         outdir.mkdir()
 
-    loader = ioutils.ImageLoader(os.listdir(str(imgdir)), prefix=imgdir)
+    loader = ioutils.ImageLoaderWithPath(os.listdir(str(imgdir)), prefix=imgdir)
 
-    for path, image in loader:
+    for image, path in loader:
         boxes, landmarks = detector.detect(image)
 
         # show rectangles

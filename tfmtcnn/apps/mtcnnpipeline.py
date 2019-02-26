@@ -3,9 +3,9 @@ __author__ = 'Ruslan N. Kosarev'
 
 import os
 import pathlib as plib
-from prepare_data import wider, lfw, tfrecords, examples
-from models import PNet, RNet, ONet
-from models.train import train
+from tfmtcnn.prepare_data import wider, lfw, tfrecords, examples
+from tfmtcnn.models import PNet, RNet, ONet
+from tfmtcnn.models.train import train
 
 
 # default directory to save train data
