@@ -9,10 +9,10 @@ from tfmtcnn.models.train import train
 
 
 # default directory to save train data
-dbasedir = plib.Path(os.pardir).joinpath(os.pardir, os.pardir, 'dbase').absolute()
+dbasedir = plib.Path(os.pardir, os.pardir, os.pardir, 'dbase').absolute()
 
 # default directory to save trained nets
-mtcnndir = plib.Path(os.pardir).joinpath(os.pardir, os.pardir, 'mtcnn').absolute()
+mtcnndir = plib.Path(os.pardir, os.pardir, os.pardir, 'mtcnn').absolute()
 
 
 class DBNet:
