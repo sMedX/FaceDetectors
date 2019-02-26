@@ -2,6 +2,7 @@
 __author__ = 'Ruslan N. Kosarev'
 
 import pathlib as plib
+from collections import OrderedDict
 from tensorflow.contrib import slim
 from .mtcnn import *
 
@@ -39,6 +40,23 @@ class Factory:
     def detector(self):
         detector = Detector(self, model_path=self.model_path)
         return detector
+
+    def loss(self, input_image, label, bbox_target, landmark_target):
+        net = RNet(input_image, label, bbox_target, landmark_target, training=True)
+
+        total_loss = self.cls_loss_factor * net.cls_loss + self.bbox_loss_factor * net.bbox_loss + \
+                     self.landmark_loss_factor * net.landmark_loss + net.l2_loss
+
+        metrics = OrderedDict()
+        metrics['total_loss'] = total_loss
+        metrics['class_loss'] = net.cls_loss
+        metrics['bbox_loss'] = net.bbox_loss
+        metrics['landmark_loss'] = net.landmark_loss
+        metrics['precision'] = net.precision
+        metrics['recall'] = net.recall
+        metrics['accuracy'] = net.accuracy
+
+        return total_loss, metrics
 
 
 # construct RNet

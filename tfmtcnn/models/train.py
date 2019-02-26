@@ -6,7 +6,7 @@ import cv2
 import tensorflow as tf
 from datetime import datetime
 from tensorboard.plugins import projector
-from prepare_data import tfrecords
+from tfmtcnn.prepare_data import tfrecords
 
 
 def train_model(loss, config):
@@ -59,10 +59,10 @@ def image_color_distort(inputs):
     return inputs
 
 
-def train(config, tfprefix, prefix, display=100, seed=None):
+def train(factory, tfprefix, prefix, display=100, seed=None):
     """
 
-    :param config:
+    :param factory:
     :param tfprefix:
     :param prefix:
     :param display:
@@ -78,18 +78,14 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     if not logdir.exists():
         logdir.mkdir()
 
-    image_size = config.image_size
-    # cls_loss_factor = 1.0
-    # bbox_loss_factor = 0.5
-    # landmark_loss_factor = 0.5
+    image_size = factory.image_size
+    batch_size = factory.batch_size
 
-    batch_size = config.batch_size
-
-    batch_size_factor = batch_size/sum([config.pos_ratio, config.part_ratio, config.neg_ratio, config.landmark_ratio])
-    pos_batch_size = int(config.pos_ratio * batch_size_factor)
-    part_batch_size = int(config.part_ratio * batch_size_factor)
-    neg_batch_size = int(config.neg_ratio * batch_size_factor)
-    landmark_batch_size = int(config.landmark_ratio * batch_size_factor)
+    batch_size_factor = batch_size/sum([factory.pos_ratio, factory.part_ratio, factory.neg_ratio, factory.landmark_ratio])
+    pos_batch_size = int(factory.pos_ratio * batch_size_factor)
+    part_batch_size = int(factory.part_ratio * batch_size_factor)
+    neg_batch_size = int(factory.neg_ratio * batch_size_factor)
+    landmark_batch_size = int(factory.landmark_ratio * batch_size_factor)
 
     batch_sizes = [pos_batch_size, part_batch_size, neg_batch_size, landmark_batch_size]
     batch_size = sum(batch_sizes)
@@ -97,7 +93,7 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     files = []
     for key in ('positive', 'part', 'negative', 'landmark'):
         files.append(tfrecords.getfilename(tfprefix, key))
-    tfdata = tfrecords.read_multi_tfrecords(config, files, batch_sizes)
+    tfdata = tfrecords.read_multi_tfrecords(factory, files, batch_sizes)
 
     # define placeholder
     input_image = tf.placeholder(tf.float32, shape=[batch_size, image_size, image_size, 3], name='input_image')
@@ -107,11 +103,11 @@ def train(config, tfprefix, prefix, display=100, seed=None):
 
     input_image = image_color_distort(input_image)
 
-    net = config.factory(input_image, label, bbox_target, landmark_target, training=True)
+    # net = factory.loss(input_image, label, bbox_target, landmark_target, training=True)
 
     # initialize loss
-    loss = net.loss(config)
-    train_op, lr_op = train_model(loss, config)
+    loss, metrics = factory.loss(input_image, label, bbox_target, landmark_target)
+    train_op, lr_op = train_model(loss, factory)
 
     init = tf.global_variables_initializer()
     sess = tf.Session()
@@ -121,13 +117,8 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     sess.run(init)
 
     # visualize some variables
-    tf.summary.scalar('cls_loss', net.cls_loss)
-    tf.summary.scalar('bbox', net.bbox_loss)
-    tf.summary.scalar('landmark', net.landmark_loss)
-    tf.summary.scalar('accuracy', net.accuracy)
-    tf.summary.scalar('precision', net.precision)
-    tf.summary.scalar('recall', net.recall)
-    tf.summary.scalar('total_loss', loss)
+    for key, metric in zip(metrics.keys(), metrics.values()):
+        tf.summary.scalar(key, metric)
     summary_op = tf.summary.merge_all()
 
     writer = tf.summary.FileWriter(str(logdir), sess.graph)
@@ -141,7 +132,7 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     sess.graph.finalize()
 
     # total steps
-    number_of_iterations = config.number_of_iterations * config.number_of_epochs
+    number_of_iterations = factory.number_of_iterations * factory.number_of_epochs
 
     try:
         for it in range(number_of_iterations):
@@ -161,25 +152,21 @@ def train(config, tfprefix, prefix, display=100, seed=None):
             final = (it+1) == number_of_iterations
 
             if (it+1) % display == 0 or final:
-                fetches = (net.cls_loss, net.bbox_loss, net.landmark_loss, net.l2_loss, net.accuracy, net.precision, net.recall, loss, lr_op)
+                values = sess.run(list(metrics.values()), feed_dict={input_image: image_batch_array,
+                                                                     label: label_batch_array,
+                                                                     bbox_target: bbox_batch_array,
+                                                                     landmark_target: landmark_batch_array})
 
-                values = sess.run(fetches, feed_dict={input_image: image_batch_array,
-                                                      label: label_batch_array,
-                                                      bbox_target: bbox_batch_array,
-                                                      landmark_target: landmark_batch_array})
-
-                names = ('cls loss', 'bbox loss', 'landmark loss', 'l2 loss', 'accuracy', 'precision', 'recall', 'total loss', 'lr')
                 info = '{}: iteration: {}/{}'.format(datetime.now(), it + 1, number_of_iterations)
-                for name, value in zip(names, values):
-                    info += ', {}: {:0.5f}'.format(name, value)
-
+                for keys, value in zip(metrics.keys(), values):
+                    info += ', {}: {:0.5f}'.format(keys, value)
                 print(info)
 
             # save every step
-            if (it+1) % (number_of_iterations / config.number_of_epochs) == 0 or final:
-                epoch = int(config.number_of_epochs * (it + 1) / number_of_iterations)
+            if (it+1) % (number_of_iterations / factory.number_of_epochs) == 0 or final:
+                epoch = int(factory.number_of_epochs * (it + 1) / number_of_iterations)
                 path_prefix = saver.save(sess, str(prefix), global_step=epoch)
-                print('path prefix is:', path_prefix, 'epoch', epoch, '/', config.number_of_epochs)
+                print('path prefix is:', path_prefix, 'epoch', epoch, '/', factory.number_of_epochs)
                 writer.add_summary(summary, global_step=it)
 
     except tf.errors.OutOfRangeError:
