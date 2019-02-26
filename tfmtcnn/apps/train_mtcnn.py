@@ -31,15 +31,15 @@ def main():
     dblfw = lfw.DBLFW(dbasedir.joinpath('lfw'))
 
     # initialize config for datasets and nets
-    pnet = PNet.Config()
+    pnet = PNet.Factory()
     pnet.dbase = DBNet(dbasedir, dirname='PNet', label='pnet')
     pnet.prefix = mtcnndir.joinpath('PNet', 'pnet')
 
-    rnet = RNet.Config()
+    rnet = RNet.Factory()
     rnet.dbase = DBNet(dbasedir, dirname='RNet', label='rnet')
     rnet.prefix = mtcnndir.joinpath('RNet', 'rnet')
 
-    onet = ONet.Config()
+    onet = ONet.Factory()
     onet.dbase = DBNet(dbasedir, dirname='ONet', label='onet')
     onet.prefix = mtcnndir.joinpath('ONet', 'onet')
 
