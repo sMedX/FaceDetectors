@@ -62,17 +62,6 @@ def prepare(dbase, outdbase, image_size=12, seed=None):
     loader = ioutils.ImageLoader(files, prefix=dbase.images)
 
     for img, boxes in zip(loader, list_of_boxes):
-    # for counter, annotation in enumerate(annotations):
-    #     annotation = annotation.split(' ')
-
-        # image path
-        # fimage = annotation[0]
-
-        # boxed change to float type
-        # boxes = np.array(list(map(float, annotation[1:])), dtype=np.float32).reshape(-1, 4)
-
-        # load image
-        # img = ioutils.read_image(fimage + '.jpg', prefix=dbase.images)
         height, width, channel = img.shape
 
         # keep crop random parts, until have 50 negative examples get 50 negative sample from every image
@@ -195,10 +184,6 @@ def prepare(dbase, outdbase, image_size=12, seed=None):
                     part.append((os.path.join(filename.parent.name, filename.name), -1, offset_x1, offset_y1, offset_x2, offset_y2))
 
                     d_idx += 1
-
-        # if (counter+1) % 100 == 0:
-        #     print('\r{}/{} images have been processed, positive: {}, negative: {}, part: {}'.
-        #           format(counter+1, number_of_images, p_idx, n_idx, d_idx), end='')
 
     print('\r{} images have been processed, positive: {}, negative: {}, part: {}'.
           format(number_of_images, p_idx, n_idx, d_idx))
