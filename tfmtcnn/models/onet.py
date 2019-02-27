@@ -36,28 +36,6 @@ class Config:
     def factory(self):
         return ONet(self)
 
-    # @property
-    # def detector(self):
-    #     detector = Detector(self, model_path=self.model_path)
-    #     return detector
-    #
-    # def loss(self, input_image, label, bbox_target, landmark_target):
-    #     net = ONet(input_image, label, bbox_target, landmark_target, training=True)
-    #
-    #     total_loss = self.cls_loss_factor * net.cls_loss + self.bbox_loss_factor * net.bbox_loss + \
-    #                  self.landmark_loss_factor * net.landmark_loss + net.l2_loss
-    #
-    #     metrics = OrderedDict()
-    #     metrics['total_loss'] = total_loss
-    #     metrics['class_loss'] = net.cls_loss
-    #     metrics['bbox_loss'] = net.bbox_loss
-    #     metrics['landmark_loss'] = net.landmark_loss
-    #     metrics['precision'] = net.precision
-    #     metrics['recall'] = net.recall
-    #     metrics['accuracy'] = net.accuracy
-    #
-    #     return total_loss, metrics
-
 
 # construct ONet
 class ONet:
@@ -154,46 +132,41 @@ class ONet:
         return total_loss, metrics
 
     def predict(self, databatch):
-        # access data
-        # databatch: N x 3 x data_size x data_size
-        scores = []
         batch_size = self.batch_size
 
         minibatch = []
         cur = 0
-        #num of all_data
         n = databatch.shape[0]
+
         while cur < n:
-            #split mini-batch
             minibatch.append(databatch[cur:min(cur + batch_size, n), :, :, :])
             cur += batch_size
-        #every batch prediction result
+
         cls_prob_list = []
         bbox_pred_list = []
         landmark_pred_list = []
+
         for idx, data in enumerate(minibatch):
             m = data.shape[0]
             real_size = self.batch_size
-            #the last batch
+
             if m < batch_size:
                 keep_inds = np.arange(m)
-                #gap (difference)
                 gap = self.batch_size - m
+
                 while gap >= len(keep_inds):
                     gap -= len(keep_inds)
                     keep_inds = np.concatenate((keep_inds, keep_inds))
+
                 if gap != 0:
                     keep_inds = np.concatenate((keep_inds, keep_inds[:gap]))
+
                 data = data[keep_inds]
                 real_size = m
-            #cls_prob batch*2
-            #bbox_pred batch*4
+
             cls_prob, bbox_pred,landmark_pred = self.sess.run([self.cls_prob, self.bbox_pred,self.landmark_pred], feed_dict={self.image_op: data})
-            #num_batch * batch_size *2
             cls_prob_list.append(cls_prob[:real_size])
-            #num_batch * batch_size *4
             bbox_pred_list.append(bbox_pred[:real_size])
-            #num_batch * batch_size*10
             landmark_pred_list.append(landmark_pred[:real_size])
-            #num_of_data*2,num_of_data*4,num_of_data*10
+
         return np.concatenate(cls_prob_list, axis=0), np.concatenate(bbox_pred_list, axis=0), np.concatenate(landmark_pred_list, axis=0)
