@@ -7,9 +7,9 @@ import pathlib as plib
 import cv2
 
 from tfmtcnn.prepare_data import ioutils
-from tfmtcnn.models import PNet
-from tfmtcnn.models import RNet
-from tfmtcnn.models import ONet
+from tfmtcnn.models import pnet
+from tfmtcnn.models import rnet
+from tfmtcnn.models import onet
 from tfmtcnn.mtcnn import MTCNN
 
 imgdir = plib.Path(os.pardir, 'images').absolute()
@@ -34,15 +34,15 @@ def main():
 
     # load P-net model
     if mode in ('PNet', 'RNet', 'ONet'):
-        detectors[0] = PNet.PNet(model_path='default')
+        detectors[0] = pnet.PNet(model_path='default')
 
     # load R-net model
     if mode in ('RNet', 'ONet'):
-        detectors[1] = RNet.RNet(model_path='default')
+        detectors[1] = rnet.RNet(model_path='default')
 
     # load O-net model
     if mode in ('ONet',):
-        detectors[2] = ONet.ONet(model_path='default')
+        detectors[2] = onet.ONet(model_path='default')
 
     detector = MTCNN(detectors=detectors,
                      min_face_size=min_face_size,
