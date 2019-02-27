@@ -32,20 +32,17 @@ class Config:
         # prefix to save trained net
         self.prefix = None
 
-    @property
-    def factory(self):
-        return ONet(self)
-
 
 # construct ONet
 class ONet:
-    def __init__(self, config=Config(), batch_size=1, model_path=None):
+    def __init__(self, config=None, batch_size=1, model_path=None):
+        if config is None:
+            config = Config()
         self.config = config
 
         if model_path == 'default':
-            self.model_path = plib.Path(__file__).parent.joinpath('parameters', 'onet', 'onet')
-        else:
-            self.model_path = model_path
+            model_path = plib.Path(__file__).parent.joinpath('parameters', 'onet', 'onet')
+        self.model_path = model_path
 
         if model_path is not None:
             graph = tf.Graph()

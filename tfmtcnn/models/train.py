@@ -59,10 +59,10 @@ def image_color_distort(inputs):
     return inputs
 
 
-def train(config, tfprefix, prefix, display=100, seed=None):
+def train(net, tfprefix, prefix, display=100, seed=None):
     """
 
-    :param config:
+    :param net:
     :param tfprefix:
     :param prefix:
     :param display:
@@ -77,6 +77,8 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     logdir = prefix.parent.joinpath('logs')
     if not logdir.exists():
         logdir.mkdir()
+
+    config = net.config
 
     image_size = config.image_size
     batch_size = config.batch_size
@@ -102,8 +104,6 @@ def train(config, tfprefix, prefix, display=100, seed=None):
     landmark_target = tf.placeholder(tf.float32, shape=[batch_size, 10], name='landmark_target')
 
     input_image = image_color_distort(input_image)
-
-    net = config.factory
 
     # initialize loss
     loss, metrics = net.loss(input_image, label, bbox_target, landmark_target)

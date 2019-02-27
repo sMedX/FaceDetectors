@@ -32,20 +32,17 @@ class Config:
         # prefix to save trained net
         self.prefix = None
 
-    @property
-    def factory(self):
-        return PNet(self)
-
 
 # construct PNet
 class PNet:
-    def __init__(self, config=Config(), model_path=None):
+    def __init__(self, config=None, model_path=None):
+        if config is None:
+            config = Config()
         self.config = config
 
         if model_path == 'default':
-            self.model_path = plib.Path(__file__).parent.joinpath('parameters', 'pnet', 'pnet')
-        else:
-            self.model_path = model_path
+            model_path = plib.Path(__file__).parent.joinpath('parameters', 'pnet', 'pnet')
+        self.model_path = model_path
 
         # create a graph
         if model_path is not None:

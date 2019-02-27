@@ -4,7 +4,7 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import pathlib as plib
 from tfmtcnn.prepare_data import wider, lfw, tfrecords, examples
-from tfmtcnn.models import PNet, RNet, ONet
+from tfmtcnn.models import pnet, rnet, onet
 from tfmtcnn.models.train import train
 
 
@@ -13,6 +13,8 @@ dbasedir = plib.Path(os.pardir, os.pardir, os.pardir, 'dbase').absolute()
 
 # default directory to save trained nets
 mtcnndir = plib.Path(os.pardir, os.pardir, os.pardir, 'mtcnn').absolute()
+
+threshold = (0.6, 0.7, 0.7)
 
 
 class DBNet:
@@ -30,57 +32,69 @@ def main():
     dbwider = wider.DBWider(dbasedir.joinpath('wider'))
     dblfw = lfw.DBLFW(dbasedir.joinpath('lfw'))
 
-    # initialize config for datasets and nets
-    pnet = PNet.Factory()
-    pnet.dbase = DBNet(dbasedir, dirname='PNet', label='pnet')
-    pnet.prefix = mtcnndir.joinpath('PNet', 'pnet')
+    nets = [None, None, None]
 
-    rnet = RNet.Factory()
-    rnet.dbase = DBNet(dbasedir, dirname='RNet', label='rnet')
-    rnet.prefix = mtcnndir.joinpath('RNet', 'rnet')
+    # initialize config for data sets and nets
+    config = pnet.Config()
+    config.dbase = DBNet(dbasedir, dirname='PNet', label='pnet')
+    config.prefix = mtcnndir.joinpath('PNet', 'pnet')
+    nets[0] = pnet.PNet(config=config)
 
-    onet = ONet.Factory()
-    onet.dbase = DBNet(dbasedir, dirname='ONet', label='onet')
-    onet.prefix = mtcnndir.joinpath('ONet', 'onet')
+    config = rnet.Config()
+    config.dbase = DBNet(dbasedir, dirname='RNet', label='rnet')
+    config.prefix = mtcnndir.joinpath('RNet', 'rnet')
+    nets[1] = rnet.RNet(config=config)
+
+    config = onet.Config()
+    config.dbase = DBNet(dbasedir, dirname='ONet', label='onet')
+    config.prefix = mtcnndir.joinpath('ONet', 'onet')
+    nets[2] = onet.ONet(config=config)
 
     # ------------------------------------------------------------------------------------------------------------------
     # train P-Net (prediction net)
 
     # prepare train data
-    wider.prepare(dbwider, pnet.dbase, image_size=pnet.image_size, seed=seed)
-    lfw.prepare(dblfw, pnet.dbase, image_size=pnet.image_size, seed=seed)
+    net = nets[0]
+    config = net.config
+
+    wider.prepare(dbwider, config.dbase, image_size=config.image_size, seed=seed)
+    lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
 
     # save tf record files
-    tfrecords.write_multi_tfrecords(pnet.dbase.h5file, prefix=pnet.dbase.tfprefix, seed=seed)
+    tfrecords.write_multi_tfrecords(config.dbase.h5file, prefix=config.dbase.tfprefix, seed=seed)
 
     # train
-    train(pnet, tfprefix=pnet.dbase.tfprefix, prefix=pnet.prefix, seed=seed)
+    train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
 
     # ------------------------------------------------------------------------------------------------------------------
     # train R-Net (refinement net)
+    net = nets[1]
+    config = net.config
 
     # prepare train data
-    examples.generate(dbwider, models=(pnet, rnet), threshold=(0.3, 0.1, 0.7), min_face_size=20, stride=2)
-    lfw.prepare(dblfw, rnet.dbase, image_size=rnet.image_size, seed=seed)
+    examples.generate(dbwider, models=(nets[0].config, nets[1].config), threshold=threshold, min_face_size=20, stride=2)
+    lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
 
     # save tf record files
-    tfrecords.write_multi_tfrecords(rnet.dbase.h5file, prefix=rnet.dbase.tfprefix, seed=seed)
+    tfrecords.write_multi_tfrecords(config.dbase.h5file, prefix=config.dbase.tfprefix, seed=seed)
 
     # train
-    train(rnet, tfprefix=rnet.dbase.tfprefix, prefix=rnet.prefix, seed=seed)
+    train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
 
     # ------------------------------------------------------------------------------------------------------------------
     # train O-Net (refinement net)
+    net = nets[2]
+    config = net.config
 
     # prepare train data
-    examples.generate(dbwider, models=(pnet, rnet, onet), threshold=(0.3, 0.1, 0.7), min_face_size=20, stride=2)
-    lfw.prepare(dblfw, onet.dbase, image_size=onet.image_size, seed=seed)
+    examples.generate(dbwider, models=(nets[0].config, nets[1].config, nets[2].config), threshold=threshold, min_face_size=20, stride=2)
+    lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
 
     # save tf record files
-    tfrecords.write_multi_tfrecords(onet.dbase.h5file, prefix=onet.dbase.tfprefix, seed=seed)
+    tfrecords.write_multi_tfrecords(config.dbase.h5file, prefix=config.dbase.tfprefix, seed=seed)
 
     # train
-    train(onet, tfprefix=onet.dbase.tfprefix, prefix=onet.prefix, seed=seed)
+    train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
 
 
 if __name__ == '__main__':
