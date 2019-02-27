@@ -9,10 +9,10 @@ from tfmtcnn.models.train import train
 
 
 # default directory to save train data
-dbasedir = plib.Path(os.pardir, os.pardir, os.pardir, 'dbase').absolute()
+dbasedir = plib.Path(os.pardir, 'dbase').absolute()
 
 # default directory to save trained nets
-mtcnndir = plib.Path(os.pardir, os.pardir, os.pardir, 'mtcnn').absolute()
+mtcnndir = plib.Path(os.pardir, 'mtcnn').absolute()
 
 threshold = (0.6, 0.7, 0.7)
 min_face_size = 20
