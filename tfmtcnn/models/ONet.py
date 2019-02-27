@@ -8,8 +8,8 @@ from .mtcnn import *
 
 
 # config to train O-Net (output net)
-class Factory:
-    def __init__(self, model_path=None):
+class Config:
+    def __init__(self):
         self.image_size = 48
         self.number_of_epochs = 30
         self.number_of_iterations = 5000
@@ -26,42 +26,69 @@ class Factory:
         self.bbox_loss_factor = 0.5
         self.landmark_loss_factor = 0.5
 
-        self.factory = ONet
-
         # config for database to train net
         self.dbase = None
 
         # prefix to save trained net
         self.prefix = None
 
-        self.model_path = model_path
-
     @property
-    def detector(self):
-        detector = Detector(self, model_path=self.model_path)
-        return detector
+    def factory(self):
+        return ONet(self)
 
-    def loss(self, input_image, label, bbox_target, landmark_target):
-        net = ONet(input_image, label, bbox_target, landmark_target, training=True)
-
-        total_loss = self.cls_loss_factor * net.cls_loss + self.bbox_loss_factor * net.bbox_loss + \
-                     self.landmark_loss_factor * net.landmark_loss + net.l2_loss
-
-        metrics = OrderedDict()
-        metrics['total_loss'] = total_loss
-        metrics['class_loss'] = net.cls_loss
-        metrics['bbox_loss'] = net.bbox_loss
-        metrics['landmark_loss'] = net.landmark_loss
-        metrics['precision'] = net.precision
-        metrics['recall'] = net.recall
-        metrics['accuracy'] = net.accuracy
-
-        return total_loss, metrics
+    # @property
+    # def detector(self):
+    #     detector = Detector(self, model_path=self.model_path)
+    #     return detector
+    #
+    # def loss(self, input_image, label, bbox_target, landmark_target):
+    #     net = ONet(input_image, label, bbox_target, landmark_target, training=True)
+    #
+    #     total_loss = self.cls_loss_factor * net.cls_loss + self.bbox_loss_factor * net.bbox_loss + \
+    #                  self.landmark_loss_factor * net.landmark_loss + net.l2_loss
+    #
+    #     metrics = OrderedDict()
+    #     metrics['total_loss'] = total_loss
+    #     metrics['class_loss'] = net.cls_loss
+    #     metrics['bbox_loss'] = net.bbox_loss
+    #     metrics['landmark_loss'] = net.landmark_loss
+    #     metrics['precision'] = net.precision
+    #     metrics['recall'] = net.recall
+    #     metrics['accuracy'] = net.accuracy
+    #
+    #     return total_loss, metrics
 
 
 # construct ONet
 class ONet:
-    def __init__(self, inputs, label=None, bbox_target=None, landmark_target=None, training=True):
+    def __init__(self, config=Config(), batch_size=1, model_path=None):
+        self.config = config
+
+        if model_path == 'default':
+            self.model_path = plib.Path(__file__).parent.joinpath('parameters', 'onet', 'onet')
+        else:
+            self.model_path = model_path
+
+        if model_path is not None:
+            graph = tf.Graph()
+            size = config.image_size
+            self.batch_size = batch_size
+
+            with graph.as_default():
+                self.image_op = tf.placeholder(tf.float32, shape=[batch_size, size, size, 3], name='input_image')
+
+                self.cls_prob, self.bbox_pred, self.landmark_pred = self.activate(self.image_op)
+                self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
+                                                             gpu_options=tf.GPUOptions(allow_growth=True)))
+                try:
+                    tf.train.Saver().restore(self.sess, str(self.model_path))
+                except:
+                    raise IOError('unable restore parameters from {}'.format(str(self.model_path)))
+
+                print('restore parameters from the path {}'.format(str(self.model_path)))
+
+    @staticmethod
+    def activate(inputs):
         with slim.arg_scope([slim.conv2d],
                             activation_fn=prelu,
                             weights_initializer=slim.xavier_initializer(),
@@ -88,55 +115,44 @@ class ONet:
             fc1 = slim.fully_connected(fc_flatten, num_outputs=256, scope='fc1')
             print(fc1.get_shape())
             
-            self.cls_prob = slim.fully_connected(fc1, num_outputs=2, scope='cls_fc', activation_fn=tf.nn.softmax)
-            print(self.cls_prob.get_shape())
-            self.bbox_pred = slim.fully_connected(fc1, num_outputs=4, scope='bbox_fc', activation_fn=None)
-            print(self.bbox_pred.get_shape())
-            self.landmark_pred = slim.fully_connected(fc1, num_outputs=10, scope='landmark_fc', activation_fn=None)
-            print(self.landmark_pred.get_shape())
+            cls_prob = slim.fully_connected(fc1, num_outputs=2, scope='cls_fc', activation_fn=tf.nn.softmax)
+            print(cls_prob.get_shape())
 
-            if training:
-                self.cls_loss = cls_ohem(self.cls_prob, label)
-                self.bbox_loss = bbox_ohem(self.bbox_pred, bbox_target, label)
-                self.landmark_loss = landmark_ohem(self.landmark_pred, landmark_target, label)
-                self.l2_loss = tf.add_n(slim.losses.get_regularization_losses())
+            bbox_pred = slim.fully_connected(fc1, num_outputs=4, scope='bbox_fc', activation_fn=None)
+            print(bbox_pred.get_shape())
 
-                tp, tn, fp, fn = contingency_table(self.cls_prob, label)
+            landmark_pred = slim.fully_connected(fc1, num_outputs=10, scope='landmark_fc', activation_fn=None)
+            print(landmark_pred.get_shape())
 
-                self.accuracy = tf.divide(tp + tn, tp + tn + fp + fn, name='accuracy')
-                self.precision = tf.divide(tp, tp + fp, name='precision')
-                self.recall = tf.divide(tp, tp + fn, name='recall')
+            return cls_prob, bbox_pred, landmark_pred
 
+    def loss(self, inputs, label, bbox_target, landmark_target):
+        cls_prob, bbox_pred, landmark_pred = self.activate(inputs)
 
-class Detector:
-    def __init__(self, config, batch_size=1, model_path=None):
-        size = config.image_size
+        cls_loss = cls_ohem(cls_prob, label)
+        bbox_loss = bbox_ohem(bbox_pred, bbox_target, label)
+        landmark_loss = landmark_ohem(landmark_pred, landmark_target, label)
+        l2_loss = tf.add_n(slim.losses.get_regularization_losses())
 
-        graph = tf.Graph()
-        with graph.as_default():
-            self.image_op = tf.placeholder(tf.float32, shape=[batch_size, size, size, 3], name='input_image')
+        tp, tn, fp, fn = contingency_table(cls_prob, label)
 
-            net = ONet(self.image_op, training=False)
-            self.cls_prob = net.cls_prob
-            self.bbox_pred = net.bbox_pred
-            self.landmark_pred = net.landmark_pred
-            self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
-                                                         gpu_options=tf.GPUOptions(allow_growth=True)))
-            saver = tf.train.Saver()
+        accuracy = tf.divide(tp + tn, tp + tn + fp + fn, name='accuracy')
+        precision = tf.divide(tp, tp + fp, name='precision')
+        recall = tf.divide(tp, tp + fn, name='recall')
 
-            if model_path is None:
-                model_path = plib.Path(__file__).parent.joinpath('parameters', 'onet', 'onet')
+        total_loss = self.config.cls_loss_factor * cls_loss + self.config.bbox_loss_factor * bbox_loss + self.config.landmark_loss_factor * landmark_loss + l2_loss
 
-            try:
-                saver.restore(self.sess, str(model_path))
-            except:
-                raise IOError('unable restore parameters from {}'.format(str(model_path)))
+        metrics = OrderedDict()
+        metrics['total_loss'] = total_loss
+        metrics['class_loss'] = cls_loss
+        metrics['bbox_loss'] = bbox_loss
+        metrics['landmark_loss'] = landmark_loss
+        metrics['precision'] = precision
+        metrics['recall'] = recall
+        metrics['accuracy'] = accuracy
 
-            print('restore parameters from the path {}'.format(str(model_path)))
+        return total_loss, metrics
 
-        self.data_size = size
-        self.batch_size = batch_size
-    #rnet and onet minibatch(test)
     def predict(self, databatch):
         # access data
         # databatch: N x 3 x data_size x data_size

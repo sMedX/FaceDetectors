@@ -34,15 +34,15 @@ def main():
 
     # load P-net model
     if mode in ('PNet', 'RNet', 'ONet'):
-        detectors[0] = PNet.Factory(model_path=None)  # FcnDetector(pnet.Factory(), model_path=None)
+        detectors[0] = PNet.PNet(model_path='default')
 
     # load R-net model
     if mode in ('RNet', 'ONet'):
-        detectors[1] = RNet.Factory(model_path=None)  # Detector(rnet.Config(), batch_size[1], model_path[1])
+        detectors[1] = RNet.RNet(model_path='default')
 
     # load O-net model
     if mode in ('ONet',):
-        detectors[2] = ONet.Factory(model_path=None)
+        detectors[2] = ONet.ONet(model_path='default')
 
     detector = MTCNN(detectors=detectors,
                      min_face_size=min_face_size,

@@ -13,9 +13,9 @@ class MTCNN:
                  stride=2,
                  scale_factor=0.79):
 
-        self.pnet_detector = detectors[0].detector
-        self.rnet_detector = detectors[1].detector
-        self.onet_detector = detectors[2].detector
+        self.pnet_detector = detectors[0]
+        self.rnet_detector = detectors[1]
+        self.onet_detector = detectors[2]
         self.min_face_size = min_face_size
         self.stride = stride
         self.threshold = threshold
