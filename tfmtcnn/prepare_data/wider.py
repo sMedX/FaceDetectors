@@ -27,18 +27,18 @@ class DBWider:
 labels = ('positive', 'negative', 'part')
 
 
-def prepare(dbase, outdbase, image_size=12, seed=None):
+def prepare(dbase, outdir, image_size=12, seed=None):
     np.random.seed(seed=seed)
 
     positive = []
     negative = []
     part = []
 
-    outdbase.positive = outdbase.output.joinpath('positive')
-    outdbase.negative = outdbase.output.joinpath('negative')
-    outdbase.part = outdbase.output.joinpath('part')
+    outdir.positive = outdir.output.joinpath('positive')
+    outdir.negative = outdir.output.joinpath('negative')
+    outdir.part = outdir.output.joinpath('part')
 
-    for dir in (outdbase.positive, outdbase.negative, outdbase.part):
+    for dir in (outdir.positive, outdir.negative, outdir.part):
         if not dir.exists():
             dir.mkdir(parents=True)
 
@@ -86,7 +86,7 @@ def prepare(dbase, outdbase, image_size=12, seed=None):
                 resized = cv2.resize(cropped, (image_size, image_size), interpolation=cv2.INTER_LINEAR)
 
                 # Iou with all gts must below 0.3
-                filename = outdbase.negative.joinpath('{}.jpg'.format(n_idx))
+                filename = outdir.negative.joinpath('{}.jpg'.format(n_idx))
                 ioutils.write_image(resized, filename)
                 negative.append((os.path.join(filename.parent.name, filename.name), 0, 0, 0, 0, 0))
                 n_idx += 1
@@ -129,7 +129,7 @@ def prepare(dbase, outdbase, image_size=12, seed=None):
                     resized = cv2.resize(cropped, (image_size, image_size), interpolation=cv2.INTER_LINEAR)
 
                     # Iou with all gts must below 0.3
-                    filename = outdbase.negative.joinpath('{}.jpg'.format(n_idx))
+                    filename = outdir.negative.joinpath('{}.jpg'.format(n_idx))
                     ioutils.write_image(resized, filename)
                     negative.append((os.path.join(filename.parent.name, filename.name), 0, 0, 0, 0, 0))
                     n_idx += 1
@@ -172,14 +172,14 @@ def prepare(dbase, outdbase, image_size=12, seed=None):
                 box_ = box.reshape(1, -1)
                 iou = IoU(crop_box, box_)
                 if iou >= 0.65:
-                    filename = outdbase.positive.joinpath('{}.jpg'.format(p_idx))
+                    filename = outdir.positive.joinpath('{}.jpg'.format(p_idx))
                     ioutils.write_image(resized, filename)
                     positive.append((os.path.join(filename.parent.name, filename.name), 1, offset_x1, offset_y1, offset_x2, offset_y2))
 
                     p_idx += 1
 
                 elif iou >= 0.4:
-                    filename = outdbase.part.joinpath('{}.jpg'.format(d_idx))
+                    filename = outdir.part.joinpath('{}.jpg'.format(d_idx))
                     ioutils.write_image(resized, filename)
                     part.append((os.path.join(filename.parent.name, filename.name), -1, offset_x1, offset_y1, offset_x2, offset_y2))
 
@@ -188,6 +188,6 @@ def prepare(dbase, outdbase, image_size=12, seed=None):
     print('\r{} images have been processed, positive: {}, negative: {}, part: {}'.
           format(number_of_images, p_idx, n_idx, d_idx))
 
-    h5utils.write(outdbase.h5file, 'positive', np.array(positive, dtype=dtype))
-    h5utils.write(outdbase.h5file, 'negative', np.array(negative, dtype=dtype))
-    h5utils.write(outdbase.h5file, 'part', np.array(negative, dtype=dtype))
+    h5utils.write(outdir.h5file, 'positive', np.array(positive, dtype=dtype))
+    h5utils.write(outdir.h5file, 'negative', np.array(negative, dtype=dtype))
+    h5utils.write(outdir.h5file, 'part', np.array(negative, dtype=dtype))
