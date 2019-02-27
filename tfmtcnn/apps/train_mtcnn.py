@@ -15,6 +15,8 @@ dbasedir = plib.Path(os.pardir, os.pardir, os.pardir, 'dbase').absolute()
 mtcnndir = plib.Path(os.pardir, os.pardir, os.pardir, 'mtcnn').absolute()
 
 threshold = (0.6, 0.7, 0.7)
+min_face_size = 20
+stride = 2
 
 
 class DBNet:
@@ -72,7 +74,7 @@ def main():
     config = net.config
 
     # prepare train data
-    examples.generate(dbwider, models=(nets[0].config, nets[1].config), threshold=threshold, min_face_size=20, stride=2)
+    examples.generate(dbwider, models=(nets[0].config, nets[1].config), threshold=threshold, min_face_size=min_face_size, stride=stride)
     lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
 
     # save tf record files
