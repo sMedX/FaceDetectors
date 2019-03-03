@@ -65,25 +65,27 @@ class ImageLoaderWithPath:
         return self
 
     def __init__(self, data, prefix=None, display=100):
-        self.counter = -1
+        self.counter = 0
         self.start_time = time.time()
         self.data = data
         self.display = display
         self.size = len(data)
         self.prefix = str(prefix)
 
-    def __next__(self):
-        self.counter += 1
+        print('Loader <{}> is initialized, number of images {}'.format(self.__class__.__name__, self.size))
 
+    def __next__(self):
         if self.counter < self.size:
-            if self.counter % self.display == 0:
+            if (self.counter + 1) % self.display == 0:
                 elapsed_time = (time.time() - self.start_time) / self.display
                 print('\rnumber of processed images {}/{}, {:.5f} seconds per image'.
-                      format(self.counter, self.size, elapsed_time), end='')
+                      format(self.counter+1, self.size, elapsed_time), end='')
                 self.start_time = time.time()
 
             path = plib.Path(os.path.join(str(self.prefix), self.data[self.counter]))
             image = read_image(path)
+
+            self.counter += 1
 
             return image, path
         else:
