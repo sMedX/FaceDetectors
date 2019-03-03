@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import h5py
 import pathlib as plib
+from collections import OrderedDict as dict
 
 from tfmtcnn.prepare_data.utils import IoU
 from tfmtcnn.prepare_data.BBox_utils import read_bbox_data, BBox
@@ -40,6 +41,7 @@ class DBLFW:
         self.train_annotations = self.path.joinpath('trainImageList.txt')
         self.test_annotations = self.path.joinpath('testImageList.txt')
         self.label = 'landmark'
+        self.landmarks = ('lefteye', 'righteye', 'nose',  'leftmouth', 'rightmouth')
 
     def __repr__(self):
         """Representation of the database"""

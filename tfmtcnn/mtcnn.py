@@ -3,6 +3,9 @@ __author__ = 'Ruslan N. Kosarev'
 
 import cv2
 import numpy as np
+from tfmtcnn.models import pnet
+from tfmtcnn.models import rnet
+from tfmtcnn.models import onet
 
 
 class MTCNN:
@@ -12,6 +15,13 @@ class MTCNN:
                  min_face_size=20,
                  stride=2,
                  scale_factor=0.79):
+
+        # initialize default detector
+        if detectors is None:
+            detectors = [None, None, None]
+            detectors[0] = pnet.PNet(model_path='default')
+            detectors[1] = rnet.RNet(model_path='default')
+            detectors[2] = onet.ONet(model_path='default')
 
         self.pnet_detector = detectors[0]
         self.rnet_detector = detectors[1]
