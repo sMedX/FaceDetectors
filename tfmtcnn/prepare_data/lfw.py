@@ -15,6 +15,22 @@ dtype = np.dtype([('path', h5py.special_dtype(vlen=str)), ('label', np.int8),
                   ('1', np.float), ('2', np.float), ('3', np.float), ('4', np.float), ('5', np.float),
                   ('6', np.float), ('7', np.float), ('8', np.float), ('9', np.float), ('10', np.float)])
 
+"""
+http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm
+
+Training set: [Download http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/train.zip]
+It contains 5,590 LFW images and 7,876 other images downloaded from the web. The training set and validation set 
+are defined in trainImageList.txt and testImageList.txt, respectively. Each line of these text files starts with 
+the image name, followed by the boundary positions of the face bounding box retured by our face detector, then followed 
+by the positions of the five facial points.
+
+Testing set: [Download http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/test.zip]
+It contains the 1,521 BioID images, 781 LFPW training images, and 249 LFPW test images used in our testing, together 
+with the text files recording the boundary positions of the face bounding box retured by our face detector for each 
+dataset. A few images that our face detector failed are not listed in the text files. LFPW images are renamed for 
+the convenience of processing.
+"""
+
 
 class DBLFW:
     def __init__(self, path):
