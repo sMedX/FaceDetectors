@@ -48,6 +48,33 @@ class DBLFW:
                 ' test annotations {}\n'.format(self.test_annotations))
         return info
 
+    @property
+    def read_test_annotations(self):
+        return self.read_annotations(self.test_annotations)
+
+    @property
+    def read_train_annotations(self):
+        return self.read_annotations(self.train_annotations)
+
+    @staticmethod
+    def read_annotations(filename):
+
+        files = []
+        boxes = []
+        landmarks = []
+
+        with filename.open() as f:
+            lines = [a.strip() for a in f]
+
+        for line in lines:
+            parts = line.split(' ')
+
+            files.append(parts[0].replace('\\', os.sep))
+            boxes.append(BBox([int(_) for _ in (parts[1], parts[3], parts[2], parts[4])]))
+            landmarks.append(np.array([float(_) for _ in parts[5:]]).reshape(5, 2))
+
+        return files, boxes, landmarks
+
 
 def prepare(dbase, outdbase, image_size=12, augment=True, seed=None):
     np.random.seed(seed=seed)
