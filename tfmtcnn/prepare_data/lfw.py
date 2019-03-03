@@ -36,7 +36,8 @@ class DBLFW:
     def __init__(self, path):
         self.path = path
         self.images = path.joinpath('')
-        self.annotations = path.joinpath('trainImageList.txt')
+        self.train_annotations = path.joinpath('trainImageList.txt')
+        self.test_annotations = path.joinpath('testImageList.txt')
         self.label = 'landmark'
 
 
