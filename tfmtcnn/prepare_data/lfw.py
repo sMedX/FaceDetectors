@@ -5,6 +5,8 @@ import os
 import cv2
 import numpy as np
 import h5py
+import pathlib as plib
+
 from tfmtcnn.prepare_data.utils import IoU
 from tfmtcnn.prepare_data.BBox_utils import read_bbox_data, BBox
 from tfmtcnn.prepare_data.Landmark_utils import rotate, flip
@@ -34,11 +36,17 @@ the convenience of processing.
 
 class DBLFW:
     def __init__(self, path):
-        self.path = path
-        self.images = path.joinpath('')
-        self.train_annotations = path.joinpath('trainImageList.txt')
-        self.test_annotations = path.joinpath('testImageList.txt')
+        self.path = plib.Path(path).absolute()
+        self.train_annotations = self.path.joinpath('trainImageList.txt')
+        self.test_annotations = self.path.joinpath('testImageList.txt')
         self.label = 'landmark'
+
+    def __repr__(self):
+        """Representation of the database"""
+        info = ('{}: '.format(self.__class__.__name__) + '{}\n'.format(self.path) +
+                'train annotations {}\n'.format(self.train_annotations) +
+                ' test annotations {}\n'.format(self.test_annotations))
+        return info
 
 
 def prepare(dbase, outdbase, image_size=12, augment=True, seed=None):
