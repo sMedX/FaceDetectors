@@ -9,10 +9,9 @@ import pathlib as plib
 from collections import OrderedDict as dict
 
 from tfmtcnn.prepare_data.utils import IoU
-from tfmtcnn.prepare_data.BBox_utils import read_bbox_data, BBox
+from tfmtcnn.prepare_data.bboxdata import BBox
 from tfmtcnn.prepare_data.Landmark_utils import rotate, flip
-from tfmtcnn.prepare_data import h5utils
-from tfmtcnn.prepare_data import ioutils
+from tfmtcnn.prepare_data import h5utils, ioutils
 
 dtype = np.dtype([('path', h5py.special_dtype(vlen=str)), ('label', np.int8),
                   ('1', np.float), ('2', np.float), ('3', np.float), ('4', np.float), ('5', np.float),
