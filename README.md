@@ -15,7 +15,7 @@ This work is used for reproduce MTCNN,a Joint Face Detection and Alignment using
 ## Prepare For Training Data
 1. Download Wider Face Training part only from Official Website, unzip, and put the train part to the default directory `../dbase/wider`.
 2. Download landmark training data from [here]((http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm)), unzip, and put the train part `(lfw_5590`, `net_7876`, `trainImageList.txt)` to the default directory `../dbase/lfw`.
-3. Run `mtcnnpipeline.py` to generate training data sets and then train MTCNN.
+3. Run `train_mtcnn.sh` bash file to generate training datasets and then train MTCNN.
 
 ## Some Details
 
