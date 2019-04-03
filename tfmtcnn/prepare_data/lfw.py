@@ -35,25 +35,23 @@ the convenience of processing.
 
 
 class DBLFW:
-    def __init__(self, path):
-        self.path = plib.Path(path).absolute()
-        self.train_annotations = self.path.joinpath('trainImageList.txt')
-        self.test_annotations = self.path.joinpath('testImageList.txt')
+    def __init__(self, dbasedir):
+        self.dbasedir = plib.Path(os.path.expanduser(dbasedir)).absolute()
+        self.train_annotations = self.dbasedir.joinpath('trainImageList.txt')
+        self.test_annotations = self.dbasedir.joinpath('testImageList.txt')
         self.label = 'landmark'
         self.landmarks = ('lefteye', 'righteye', 'nose',  'leftmouth', 'rightmouth')
 
     def __repr__(self):
         """Representation of the database"""
-        info = ('{}: '.format(self.__class__.__name__) + '{}\n'.format(self.path) +
+        info = ('{}: '.format(self.__class__.__name__) + '{}\n'.format(self.dbasedir) +
                 'train annotations {}\n'.format(self.train_annotations) +
                 ' test annotations {}\n'.format(self.test_annotations))
         return info
 
-    @property
     def read_test_annotations(self):
         return self.read_annotations(self.test_annotations)
 
-    @property
     def read_train_annotations(self):
         return self.read_annotations(self.train_annotations)
 
@@ -84,18 +82,18 @@ def prepare(dbase, outdbase, image_size=12, augment=True, seed=None):
     if not outdir.exists():
         outdir.mkdir()
 
-    data = read_bbox_data(dbase.annotations)
+    files, list_of_boxes, list_of_landmarks = dbase.read_train_annotations()
 
-    files = []
-    list_of_boxes = []
-    list_of_landmarks = []
+    # files = []
+    # list_of_boxes = []
+    # list_of_landmarks = []
+    #
+    # for sample in data:
+    #     files.append(sample[0])
+    #     list_of_boxes.append(sample[1])
+    #     list_of_landmarks.append(sample[2])
 
-    for sample in data:
-        files.append(sample[0])
-        list_of_boxes.append(sample[1])
-        list_of_landmarks.append(sample[2])
-
-    loader = ioutils.ImageLoader(files, prefix=dbase.images)
+    loader = ioutils.ImageLoader(files, prefix=dbase.dbasedir)
 
     idx = 0
     image_id = 0

@@ -23,7 +23,7 @@ def main(lfwdir, show=False):
     print(dblfw)
     files, boxes, landmarks = dblfw.read_test_annotations
 
-    loader = ioutils.ImageLoaderWithPath(files, prefix=dblfw.path)
+    loader = ioutils.ImageLoaderWithPath(files, prefix=dblfw.dbasedir)
 
     # initialize detector
     detector = MTCNN(min_face_size=min_face_size,

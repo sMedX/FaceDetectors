@@ -19,7 +19,7 @@ def main(lfwdir, show):
     print(dblfw)
     files, boxes, landmarks = dblfw.read_test_annotations
 
-    loader = ioutils.ImageLoaderWithPath(files, prefix=dblfw.path)
+    loader = ioutils.ImageLoaderWithPath(files, prefix=dblfw.dbasedir)
 
     # initialize original pypi mtcnn detector
     detector = MTCNN()
