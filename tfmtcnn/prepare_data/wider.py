@@ -7,6 +7,7 @@ import numpy as np
 from tfmtcnn.prepare_data import ioutils, h5utils
 from tfmtcnn.prepare_data.utils import IoU
 import cv2
+import pathlib as plib
 
 dtype = np.dtype([('path', h5py.special_dtype(vlen=str)),
                   ('label', np.int8),
@@ -18,10 +19,13 @@ dtype = np.dtype([('path', h5py.special_dtype(vlen=str)),
 
 class DBWider:
     def __init__(self, path):
-        self.path = path
-        self.images = path.joinpath('images')
-        self.wider_face_train = path.joinpath('wider_face_train.txt')
-        self.wider_face_train_bbx_gt = path.joinpath('wider_face_train_bbx_gt.txt')
+        self.path = plib.Path(os.path.expanduser(path)).absolute()
+        self.images = self.path.joinpath('images')
+        self.wider_face_train = self.path.joinpath('wider_face_train.txt')
+        self.wider_face_train_bbx_gt = self.path.joinpath('wider_face_train_bbx_gt.txt')
+
+    def read_wider_face_train_bbx_gt(self):
+        pass
 
 
 labels = ('positive', 'negative', 'part')

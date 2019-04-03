@@ -10,9 +10,11 @@ from tfmtcnn.prepare_data import ioutils, h5utils
 from tfmtcnn.prepare_data.utils import convert_to_square
 from tfmtcnn.prepare_data.data_utils import IoU
 from tfmtcnn.mtcnn import MTCNN
+from tfmtcnn.models import pnet
+from tfmtcnn.models import rnet
 
 
-def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, stride=2, slide_window=False):
+def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=20, stride=2, slide_window=False):
 
     detectors = [None, None, None]
 
@@ -25,11 +27,7 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
     config = models[0]
     model_path = '{}-{}'.format(config.prefix, config.number_of_epochs)
 
-    if slide_window:
-        detectors[0] = Detector(config(), batch_size, model_path)
-    else:
-        detectors[0] = FcnDetector(config(), model_path)
-
+    detectors[0] = pnet.PNet(config, model_path)
     image_size = models[1].image_size
     h5file = models[1].dbase.h5file
 
@@ -37,7 +35,7 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
     if len(models) > 2:
         config = models[1]
         model_path = '{}-{}'.format(config.prefix, config.number_of_epochs)
-        detectors[1] = Detector(config(), batch_size, model_path)
+        detectors[1] = rnet.RNet(config, batch_size, model_path)
 
         image_size = models[2].image_size
         h5file = models[2].dbase.h5file
@@ -46,8 +44,7 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
     detector = MTCNN(detectors=detectors,
                      min_face_size=min_face_size,
                      stride=stride,
-                     threshold=threshold,
-                     slide_window=slide_window)
+                     threshold=threshold)
 
     # create output directories
     for key in ('positive', 'negative', 'part'):
@@ -55,7 +52,7 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
         if not outdir.exists():
             outdir.mkdir(parents=True)
 
-    data = ioutils.read_annotation(dbwider.wider_face_train_bbx_gt)
+    data = ioutils.read_annotation(dbwider.images, dbwider.wider_face_train_bbx_gt)
     # data['images'] = data['images'][:500]
     # data['bboxes'] = data['bboxes'][:500]
 
@@ -66,7 +63,7 @@ def generate(dbwider, models, threshold=(0.6, 0.7, 0.7), min_face_size=25, strid
 
     loader = ioutils.ImageLoader(data['images'], prefix=dbwider.images)
 
-    for (_, img), gts in zip(loader, data['bboxes']):
+    for img, gts in zip(loader, data['bboxes']):
         dets, _ = detector.detect(img)
         if dets.shape[0] == 0:
             continue
