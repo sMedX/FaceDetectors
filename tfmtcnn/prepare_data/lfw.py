@@ -84,15 +84,6 @@ def prepare(dbase, outdbase, image_size=12, augment=True, seed=None):
 
     files, list_of_boxes, list_of_landmarks = dbase.read_train_annotations()
 
-    # files = []
-    # list_of_boxes = []
-    # list_of_landmarks = []
-    #
-    # for sample in data:
-    #     files.append(sample[0])
-    #     list_of_boxes.append(sample[1])
-    #     list_of_landmarks.append(sample[2])
-
     loader = ioutils.ImageLoader(files, prefix=dbase.dbasedir)
 
     idx = 0
