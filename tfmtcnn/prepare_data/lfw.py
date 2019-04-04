@@ -216,7 +216,7 @@ class DBLFW:
 
                     # key = os.path.join(self.label, '{}.jpg'.format(image_id))
                     # ioutils.write_image(f_imgs[i], key, prefix=outdbase.output)
-                    output.append(tuple([key, -2] + f_landmarks[i].tolist()))
+                    output.append(tuple([-2] + f_landmarks[i].tolist()))
 
                     rect = ('xmin', 'ymin', 'xmax', 'ymax')
                     landmarks = ('xlefteye', 'ylefteye',
