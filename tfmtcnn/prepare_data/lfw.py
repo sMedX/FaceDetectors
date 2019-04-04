@@ -4,20 +4,14 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import cv2
 import numpy as np
-import h5py
 import pathlib as plib
 import tensorflow as tf
-from collections import OrderedDict as dict
 
 from tfmtcnn.prepare_data import tfrecords
 from tfmtcnn.prepare_data.utils import IoU
 from tfmtcnn.prepare_data.bboxdata import BBox
 from tfmtcnn.prepare_data.Landmark_utils import rotate, flip
-from tfmtcnn.prepare_data import h5utils, ioutils
-
-dtype = np.dtype([('path', h5py.special_dtype(vlen=str)), ('label', np.int8),
-                  ('1', np.float), ('2', np.float), ('3', np.float), ('4', np.float), ('5', np.float),
-                  ('6', np.float), ('7', np.float), ('8', np.float), ('9', np.float), ('10', np.float)])
+from tfmtcnn.prepare_data import ioutils
 
 """
 http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm
@@ -77,31 +71,27 @@ class DBLFW:
 
         return files, boxes, landmarks
 
-    def prepare(self, outdbase, image_size, augment=True, seed=None):
-
-        tffile = tfrecords.getfilename(outdbase.tfprefix, self.label)
-
-        with tf.python_io.TFRecordWriter(str(tffile)) as self.tfwriter:
-            self._prepare(image_size, augment, seed)
-
-    def _prepare(self, image_size, augment, seed):
+    def prepare(self, tfprefix, image_size, augment=True, seed=None):
         np.random.seed(seed=seed)
 
-        # outdir = outdbase.output.joinpath(self.label)
-        # if not outdir.exists():
-        #     outdir.mkdir()
+        ioutils.mkdir(tfprefix.parent)
+
+        def writer():
+            tffile = tfrecords.getfilename(tfprefix, self.label)
+            return tf.python_io.TFRecordWriter(str(tffile))
+
+        with writer() as self.tfwriter:
+            self._prepare(image_size, augment)
+
+    def _prepare(self, image_size, augment):
 
         files, list_of_boxes, list_of_landmarks = self.read_train_annotations()
 
         loader = ioutils.ImageLoader(files, prefix=self.dbasedir)
 
-        # idx = 0
-        # image_id = 0
-        output = []
-
         # image_path bbox landmark (5*2)
         for img, bbox, landmarkGt in zip(loader, list_of_boxes, list_of_landmarks):
-            height, width, channel = img.shape
+            height, width, _ = img.shape
 
             f_imgs = []
             f_landmarks = []
@@ -127,10 +117,6 @@ class DBLFW:
             landmark = np.zeros((5, 2))
 
             if augment:
-                # idx = idx + 1
-                # if idx % 100 == 0:
-                #     print('\r{} images have been processed'.format(idx), end='')
-
                 x1, y1, x2, y2 = gt_box
                 # gt's width
                 gt_w = x2 - x1 + 1
@@ -138,6 +124,7 @@ class DBLFW:
                 gt_h = y2 - y1 + 1
                 if max(gt_w, gt_h) < 40 or x1 < 0 or y1 < 0:
                     continue
+
                 # random shift
                 for i in range(10):
                     bbox_size = np.random.randint(int(min(gt_w, gt_h) * 0.8), np.ceil(1.25 * max(gt_w, gt_h)))
@@ -214,39 +201,15 @@ class DBLFW:
                     if np.sum(np.where(f_landmarks[i] >= 1, 1, 0)) > 0:
                         continue
 
-                    # key = os.path.join(self.label, '{}.jpg'.format(image_id))
-                    # ioutils.write_image(f_imgs[i], key, prefix=outdbase.output)
-                    output.append(tuple([-2] + f_landmarks[i].tolist()))
-
-                    rect = ('xmin', 'ymin', 'xmax', 'ymax')
-                    landmarks = ('xlefteye', 'ylefteye',
-                                 'xrighteye', 'yrighteye',
-                                 'xnose', 'ynose',
-                                 'xleftmouth', 'yleftmouth',
-                                 'xrightmouth', 'yrightmouth')
-
-                    sample = dict()
-                    sample['label'] = -2
-                    sample['bbox'] = {key: 0 for key in rect + landmarks}
-                    for key, value in zip(landmarks, f_landmarks[i]):
-                        sample['bbox'][key] = value
-
+                    sample = [-2] + f_landmarks[i].tolist()
                     self.add_to_tfrecord(f_imgs[i], sample)
-
-                    # image_id += 1
-
-        # print('\r{} images have been processed'.format(idx))
-        # h5utils.write(outdbase.h5file, self.label, np.array(output, dtype=dtype))
 
     def add_to_tfrecord(self, image, sample):
         image_buffer = image.tostring()
 
-        class_label = sample['label']
-        bbox = sample['bbox']
-        roi = [bbox['xmin'], bbox['ymin'], bbox['xmax'], bbox['ymax']]
-        landmark = [bbox['xlefteye'], bbox['ylefteye'], bbox['xrighteye'], bbox['yrighteye'], bbox['xnose'],
-                    bbox['ynose'],
-                    bbox['xleftmouth'], bbox['yleftmouth'], bbox['xrightmouth'], bbox['yrightmouth']]
+        class_label = sample[0]
+        roi = [0]*4
+        landmark = sample[1:1+10]
 
         example = tf.train.Example(features=tf.train.Features(feature={
             'image/encoded': tfrecords.bytes_feature(image_buffer),
