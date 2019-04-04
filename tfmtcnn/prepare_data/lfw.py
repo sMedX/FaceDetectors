@@ -87,9 +87,9 @@ class DBLFW:
     def _prepare(self, outdbase, image_size, augment, seed):
         np.random.seed(seed=seed)
 
-        outdir = outdbase.output.joinpath(self.label)
-        if not outdir.exists():
-            outdir.mkdir()
+        # outdir = outdbase.output.joinpath(self.label)
+        # if not outdir.exists():
+        #     outdir.mkdir()
 
         files, list_of_boxes, list_of_landmarks = self.read_train_annotations()
 
