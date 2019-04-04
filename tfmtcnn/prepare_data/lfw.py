@@ -82,9 +82,9 @@ class DBLFW:
         tffile = tfrecords.getfilename(outdbase.tfprefix, self.label)
 
         with tf.python_io.TFRecordWriter(str(tffile)) as self.tfwriter:
-            self._prepare(outdbase, image_size, augment, seed)
+            self._prepare(image_size, augment, seed)
 
-    def _prepare(self, outdbase, image_size, augment, seed):
+    def _prepare(self, image_size, augment, seed):
         np.random.seed(seed=seed)
 
         # outdir = outdbase.output.joinpath(self.label)
@@ -95,8 +95,8 @@ class DBLFW:
 
         loader = ioutils.ImageLoader(files, prefix=self.dbasedir)
 
-        idx = 0
-        image_id = 0
+        # idx = 0
+        # image_id = 0
         output = []
 
         # image_path bbox landmark (5*2)
@@ -127,7 +127,7 @@ class DBLFW:
             landmark = np.zeros((5, 2))
 
             if augment:
-                idx = idx + 1
+                # idx = idx + 1
                 # if idx % 100 == 0:
                 #     print('\r{} images have been processed'.format(idx), end='')
 
@@ -216,7 +216,7 @@ class DBLFW:
 
                     # key = os.path.join(self.label, '{}.jpg'.format(image_id))
                     # ioutils.write_image(f_imgs[i], key, prefix=outdbase.output)
-                    # output.append(tuple([key, -2] + f_landmarks[i].tolist()))
+                    output.append(tuple([key, -2] + f_landmarks[i].tolist()))
 
                     rect = ('xmin', 'ymin', 'xmax', 'ymax')
                     landmarks = ('xlefteye', 'ylefteye',
@@ -233,7 +233,7 @@ class DBLFW:
 
                     self.add_to_tfrecord(f_imgs[i], sample)
 
-                    image_id += 1
+                    # image_id += 1
 
         # print('\r{} images have been processed'.format(idx))
         # h5utils.write(outdbase.h5file, self.label, np.array(output, dtype=dtype))
