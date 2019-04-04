@@ -11,21 +11,21 @@ def getfilename(prefix, key):
     return prefix.with_name(prefix.name + key).with_suffix('.tfrecord')
 
 
-def _int64_feature(value):
+def int64_feature(value):
     """Wrapper for insert int64 feature into Example proto."""
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
-def _float_feature(value):
+def float_feature(value):
     """Wrapper for insert float features into Example proto."""
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 
-def _bytes_feature(value):
+def bytes_feature(value):
     """Wrapper for insert bytes features into Example proto."""
     if not isinstance(value, list):
         value = [value]
@@ -43,10 +43,10 @@ def add_to_tfrecord(writer, filename, data):
                 bbox['xleftmouth'], bbox['yleftmouth'], bbox['xrightmouth'], bbox['yrightmouth']]
 
     example = tf.train.Example(features=tf.train.Features(feature={
-        'image/encoded': _bytes_feature(image_buffer),
-        'image/label': _int64_feature(class_label),
-        'image/roi': _float_feature(roi),
-        'image/landmark': _float_feature(landmark)
+        'image/encoded': bytes_feature(image_buffer),
+        'image/label': int64_feature(class_label),
+        'image/roi': float_feature(roi),
+        'image/landmark': float_feature(landmark)
     }))
 
     writer.write(example.SerializeToString())
