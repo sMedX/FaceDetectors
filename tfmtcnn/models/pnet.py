@@ -35,7 +35,7 @@ class Config:
 
 # construct PNet
 class PNet:
-    def __init__(self, config=None, model_path=None):
+    def __init__(self, config=None, batch_size=1, model_path=None):
         if config is None:
             config = Config()
         self.config = config
