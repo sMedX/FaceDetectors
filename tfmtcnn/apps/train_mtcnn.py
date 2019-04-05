@@ -67,11 +67,11 @@ def main(**args):
     net = nets[0]
     config = net.config
 
-    #dbwider.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
-    #dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
+    dbwider.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
+    dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
 
     # train
-    #train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
+    train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
 
     # ------------------------------------------------------------------------------------------------------------------
     # train R-Net (refinement net)
