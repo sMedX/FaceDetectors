@@ -11,6 +11,9 @@ import contextlib
 from tfmtcnn.prepare_data import tfrecords
 from tfmtcnn.prepare_data import ioutils
 from tfmtcnn.prepare_data.utils import IoU
+from tfmtcnn.models import pnet, rnet, onet
+from tfmtcnn.mtcnn import MTCNN
+from tfmtcnn.prepare_data.utils import convert_to_square
 
 """
 http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/
@@ -193,16 +196,12 @@ class DBWider:
             self._hardexamples(configs, threshold, min_face_size, stride)
 
     def _hardexamples(self, configs, threshold, min_face_size, stride):
-        from tfmtcnn.models import pnet
-        from tfmtcnn.models import rnet
-        from tfmtcnn.mtcnn import MTCNN
-        from tfmtcnn.prepare_data.utils import convert_to_square
 
         detectors = [None, None, None]
 
         batch_size = 256
 
-        for i, (config, net) in enumerate(zip(configs, (pnet.PNet, rnet.RNet))):
+        for i, (config, net) in enumerate(zip(configs, (pnet.PNet, rnet.RNet, onet.ONet))):
             if i < len(configs)-1:
                 model_path = '{}-{}'.format(config.prefix, config.number_of_epochs)
                 detectors[i] = net(config, batch_size, model_path)

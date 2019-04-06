@@ -16,7 +16,7 @@ stride = 2
 class DBNet:
     def __init__(self, basedir, dirname='PNet', label='pnet'):
         self.basedir = plib.Path(os.path.expanduser(basedir)).absolute()
-        self.output = self.basedir.joinpath(dirname).absolute()
+        self.output = self.basedir.joinpath(dirname)
         self.tfprefix = self.output.joinpath(label)
 
     def __repr__(self):
@@ -31,7 +31,7 @@ class DBNet:
 
 @click.command()
 @click.option('--wider', default='~/datasets/wider', help='Directory for Wider dataset.')
-@click.option('--lfw', default='~/datasets/lfwmtcnn', help='Directory for LFW dataset.')
+@click.option('--lfw', default='~/datasets/lfw', help='Directory for LFW dataset.')
 @click.option('--mtcnn', default='~/mtcnn', help='Directory to save trained mtcnn nets.')
 def main(**args):
 
