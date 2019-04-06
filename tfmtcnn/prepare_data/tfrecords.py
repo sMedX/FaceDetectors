@@ -194,7 +194,6 @@ def read_multi_tfrecords(config, tfrecords, batch_sizes):
     labels = tf.concat([pos_label, part_label, neg_label, landmark_label], 0, name="concat/label")
 
     assert isinstance(labels, object)
-    labels.get_shape()
     rois = tf.concat([pos_roi, part_roi, neg_roi, landmark_roi], 0, name="concat/roi")
     print(rois.get_shape())
     landmarks = tf.concat([pos_landmark, part_landmark, neg_landmark, landmark_landmark], 0, name="concat/landmark")
