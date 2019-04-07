@@ -9,7 +9,7 @@ echo "datasets directory" "${ds}"
 md=~
 echo "output directory" "${md}"
 
-train_mtcnn \
+mtcnn_train \
     --wider "${ds}/datasets/wider" \
     --lfw   "${ds}/datasets/lfwmtcnn" \
     --mtcnn "${md}/mtcnn"
