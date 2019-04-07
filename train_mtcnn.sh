@@ -3,14 +3,13 @@ echo "train mtcnn"
 
 # input datasets directory
 ds=~
-echo "datasets directory" ${ds}
+echo "datasets directory" "${ds}"
 
 # output logs and models directories
 md=~
-echo "output directory" ${md}
+echo "output directory" "${md}"
 
-python3 -m tfmtcnn.apps.train_mtcnn \
-	--wider ${ds}/datasets/wider \
-	--lfw   ${ds}/datasets/lfwmtcnn \
-	--mtcnn ${md}/mtcnn
-
+train_mtcnn \
+    --wider "${ds}/datasets/wider" \
+    --lfw   "${ds}/datasets/lfwmtcnn" \
+    --mtcnn "${md}/mtcnn"
