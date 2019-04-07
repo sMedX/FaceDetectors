@@ -4,6 +4,7 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import pathlib as plib
 
+import click
 import cv2
 import numpy as np
 
@@ -30,6 +31,7 @@ min_face_size = 20
 stride = 2
 
 
+@click.command()
 def main():
     detectors = [None, None, None]
 
