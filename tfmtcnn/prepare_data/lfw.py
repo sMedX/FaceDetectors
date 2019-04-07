@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from tfmtcnn.prepare_data import tfrecords
 from tfmtcnn.prepare_data.utils import IoU
-from tfmtcnn.prepare_data.bboxdata import BBox
+from tfmtcnn.prepare_data.bboxes import BBox
 from tfmtcnn.prepare_data.landmarks import rotate, flip
 from tfmtcnn.prepare_data import ioutils
 
