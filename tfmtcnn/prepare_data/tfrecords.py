@@ -4,28 +4,28 @@ __author__ = 'Ruslan N. Kosarev'
 import os
 import numpy as np
 import tensorflow as tf
-from tfmtcnn.prepare_data import h5utils, ioutils
+from tfmtcnn.prepare_data import ioutils
 
 
 def getfilename(prefix, key):
     return prefix.with_name(prefix.name + key).with_suffix('.tfrecord')
 
 
-def _int64_feature(value):
+def int64_feature(value):
     """Wrapper for insert int64 feature into Example proto."""
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
-def _float_feature(value):
+def float_feature(value):
     """Wrapper for insert float features into Example proto."""
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 
-def _bytes_feature(value):
+def bytes_feature(value):
     """Wrapper for insert bytes features into Example proto."""
     if not isinstance(value, list):
         value = [value]
@@ -43,93 +43,93 @@ def add_to_tfrecord(writer, filename, data):
                 bbox['xleftmouth'], bbox['yleftmouth'], bbox['xrightmouth'], bbox['yrightmouth']]
 
     example = tf.train.Example(features=tf.train.Features(feature={
-        'image/encoded': _bytes_feature(image_buffer),
-        'image/label': _int64_feature(class_label),
-        'image/roi': _float_feature(roi),
-        'image/landmark': _float_feature(landmark)
+        'image/encoded': bytes_feature(image_buffer),
+        'image/label': int64_feature(class_label),
+        'image/roi': float_feature(roi),
+        'image/landmark': float_feature(landmark)
     }))
 
     writer.write(example.SerializeToString())
 
 
-def data2sample(inpdata):
-
-    outdata = []
-    rect = ('xmin', 'ymin', 'xmax', 'ymax')
-    landmarks = ('xlefteye', 'ylefteye',
-                 'xrighteye', 'yrighteye',
-                 'xnose', 'ynose',
-                 'xleftmouth', 'yleftmouth',
-                 'xrightmouth', 'yrightmouth')
-
-    for values in inpdata:
-        sample = dict()
-        sample['filename'] = values[0]
-        sample['label'] = values[1]
-        sample['bbox'] = {x: 0 for x in rect + landmarks}
-
-        values = list(values)[2:]
-
-        if len(values) == 4:
-            for key, value in zip(rect, values):
-                sample['bbox'][key] = value
-        else:
-            for key, value in zip(landmarks, values):
-                sample['bbox'][key] = value
-        outdata.append(sample)
-
-    return outdata
-
-
-def write_single_tfrecord(h5file, tffile, key=None, size=None, seed=None):
-    """
-
-    :param h5file:
-    :param tffile:
-    :param key:
-    :param size:
-    :param seed:
-    :return:
-    """
-    np.random.seed(seed=seed)
-
-    # tf record file name
-    if tffile.exists():
-        os.remove(str(tffile))
-
-    # get data from the h5 file
-    data = h5utils.read(h5file, key)
-
-    if size is None:
-        size = len(data)
-    if size < len(data):
-        data = np.random.choice(data, size=size)
-
-    tfdata = data2sample(data)
-
-    np.random.shuffle(tfdata)
-
-    with tf.python_io.TFRecordWriter(str(tffile)) as writer:
-        for i, sample in enumerate(tfdata):
-            filename = h5file.parent.joinpath(sample['filename'])
-            add_to_tfrecord(writer, filename, sample)
-
-            if (i+1) % 100 == 0:
-                print('\r{}/{} samples have been added to tfrecord file.'.format(i+1, len(tfdata)), end='')
-
-    print('\rtfrecord file {} has been written, number of samples is {}.'.format(tffile, len(tfdata)))
+# def data2sample(inpdata):
+#
+#     outdata = []
+#     rect = ('xmin', 'ymin', 'xmax', 'ymax')
+#     landmarks = ('xlefteye', 'ylefteye',
+#                  'xrighteye', 'yrighteye',
+#                  'xnose', 'ynose',
+#                  'xleftmouth', 'yleftmouth',
+#                  'xrightmouth', 'yrightmouth')
+#
+#     for values in inpdata:
+#         sample = dict()
+#         sample['filename'] = values[0]
+#         sample['label'] = values[1]
+#         sample['bbox'] = {x: 0 for x in rect + landmarks}
+#
+#         values = list(values)[2:]
+#
+#         if len(values) == 4:
+#             for key, value in zip(rect, values):
+#                 sample['bbox'][key] = value
+#         else:
+#             for key, value in zip(landmarks, values):
+#                 sample['bbox'][key] = value
+#         outdata.append(sample)
+#
+#     return outdata
 
 
-def write_multi_tfrecords(h5file, prefix=None, seed=None):
+# def write_single_tfrecord(h5file, tffile, key=None, size=None, seed=None):
+#     """
+#
+#     :param h5file:
+#     :param tffile:
+#     :param key:
+#     :param size:
+#     :param seed:
+#     :return:
+#     """
+#     np.random.seed(seed=seed)
+#
+#     # tf record file name
+#     if tffile.exists():
+#         os.remove(str(tffile))
+#
+#     # get data from the h5 file
+#     data = h5utils.read(h5file, key)
+#
+#     if size is None:
+#         size = len(data)
+#     if size < len(data):
+#         data = np.random.choice(data, size=size)
+#
+#     tfdata = data2sample(data)
+#
+#     np.random.shuffle(tfdata)
+#
+#     with tf.python_io.TFRecordWriter(str(tffile)) as writer:
+#         for i, sample in enumerate(tfdata):
+#             filename = h5file.parent.joinpath(sample['filename'])
+#             add_to_tfrecord(writer, filename, sample)
+#
+#             if (i+1) % 100 == 0:
+#                 print('\r{}/{} samples have been added to tfrecord file.'.format(i+1, len(tfdata)), end='')
+#
+#     print('\rtfrecord file {} has been written, number of samples is {}.'.format(tffile, len(tfdata)))
 
-    files = []
 
-    for key in h5utils.keys(h5file):
-        filename = getfilename(prefix, key)
-        write_single_tfrecord(h5file, filename, key=key, seed=seed)
-        files.append(filename)
-
-    return files
+# def write_multi_tfrecords(h5file, prefix=None, seed=None):
+#
+#     files = []
+#
+#     for key in h5utils.keys(h5file):
+#         filename = getfilename(prefix, key)
+#         write_single_tfrecord(h5file, filename, key=key, seed=seed)
+#         files.append(filename)
+#
+#     return files
 
 
 def read_single_tfrecord(config, tfrecord, batch_size):
@@ -194,7 +194,6 @@ def read_multi_tfrecords(config, tfrecords, batch_sizes):
     labels = tf.concat([pos_label, part_label, neg_label, landmark_label], 0, name="concat/label")
 
     assert isinstance(labels, object)
-    labels.get_shape()
     rois = tf.concat([pos_roi, part_roi, neg_roi, landmark_roi], 0, name="concat/roi")
     print(rois.get_shape())
     landmarks = tf.concat([pos_landmark, part_landmark, neg_landmark, landmark_landmark], 0, name="concat/landmark")

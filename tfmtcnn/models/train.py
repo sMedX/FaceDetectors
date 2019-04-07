@@ -71,6 +71,9 @@ def train(net, tfprefix, prefix, display=100, seed=None):
     """
     np.random.seed(seed=seed)
 
+    tf.reset_default_graph()
+    tf.Graph().as_default()
+
     if not prefix.parent.exists():
         prefix.parent.mkdir(parents=True)
 

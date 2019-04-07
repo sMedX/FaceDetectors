@@ -3,19 +3,10 @@ __author__ = 'Ruslan N. Kosarev'
 
 import os
 import pathlib as plib
-from tfmtcnn.prepare_data import wider, lfw, tfrecords, examples
+from tfmtcnn.prepare_data import wider, lfw
 from tfmtcnn.models import pnet, rnet, onet
 from tfmtcnn.models.train import train
 import click
-
-
-# default directory to save train data
-widerdir = '~/datasets/wider'
-
-lfwdir = '~/datasets/lfwmtcnn'
-
-# default directory to save trained nets
-mtcnndir = '~/mtcnn'
 
 threshold = (0.6, 0.7, 0.7)
 min_face_size = 20
@@ -25,15 +16,23 @@ stride = 2
 class DBNet:
     def __init__(self, basedir, dirname='PNet', label='pnet'):
         self.basedir = plib.Path(os.path.expanduser(basedir)).absolute()
-        self.output = self.basedir.joinpath(dirname).absolute()
-        self.h5file = self.output.joinpath(label + '.h5')
+        self.output = self.basedir.joinpath(dirname)
         self.tfprefix = self.output.joinpath(label)
+
+    def __repr__(self):
+        info = (
+                '{}\n'.format(self.__class__.__name__) +
+                'base directory to save mtcnn {}\n'.format(self.basedir) +
+                '{}\n'.format(self.output) +
+                '{}\n'.format(self.tfprefix)
+        )
+        return info
 
 
 @click.command()
 @click.option('--wider', default='~/datasets/wider', help='Directory for Wider dataset.')
-@click.option('--lfw', default='~/datasets/lfw', help='Directory for LFW dataset.')
-@click.option('--mtcnn', default='~/mtcnn', help='Directory to save trained mtcnn nets.')
+@click.option('--lfw', default='~/datasets/lfwmtcnn', help='Directory for LFW dataset.')
+@click.option('--mtcnn', default='~/models/mtcnn', help='Directory to save trained mtcnn nets.')
 def main(**args):
 
     # seed to initialize random generator.
@@ -68,11 +67,8 @@ def main(**args):
     net = nets[0]
     config = net.config
 
-    wider.prepare(dbwider, config.dbase, image_size=config.image_size, seed=seed)
-    lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
-
-    # save tf record files
-    tfrecords.write_multi_tfrecords(config.dbase.h5file, prefix=config.dbase.tfprefix, seed=seed)
+    dbwider.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
+    dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
 
     # train
     train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
@@ -83,16 +79,12 @@ def main(**args):
     config = net.config
 
     # prepare train data
-    examples.generate(dbwider,
-                      models=(nets[0].config, nets[1].config),
-                      threshold=threshold,
-                      min_face_size=min_face_size,
-                      stride=stride)
+    dbwider.prepare_with_mtcnn(configs=(nets[0].config, nets[1].config),
+                               threshold=threshold,
+                               min_face_size=min_face_size,
+                               stride=stride)
 
-    lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
-
-    # save tf record files
-    tfrecords.write_multi_tfrecords(config.dbase.h5file, prefix=config.dbase.tfprefix, seed=seed)
+    dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
 
     # train
     train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)
@@ -103,16 +95,12 @@ def main(**args):
     config = net.config
 
     # prepare train data
-    examples.generate(dbwider,
-                      models=(nets[0].config, nets[1].config, nets[2].config),
-                      threshold=threshold,
-                      min_face_size=min_face_size,
-                      stride=stride)
+    dbwider.prepare_with_mtcnn(configs=(nets[0].config, nets[1].config, nets[2].config),
+                               threshold=threshold,
+                               min_face_size=min_face_size,
+                               stride=stride)
 
-    lfw.prepare(dblfw, config.dbase, image_size=config.image_size, seed=seed)
-
-    # save tf record files
-    tfrecords.write_multi_tfrecords(config.dbase.h5file, prefix=config.dbase.tfprefix, seed=seed)
+    dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
 
     # train
     train(net, tfprefix=config.dbase.tfprefix, prefix=config.prefix, seed=seed)

@@ -9,8 +9,8 @@ echo "datasets directory" ${ds}
 md=~
 echo "output directory" ${md}
 
-python3 tfmtcnn/apps/train_mtcnn.py \
+python3 -m tfmtcnn.apps.train_mtcnn \
 	--wider ${ds}/datasets/wider \
-	--lfw   ${ds}/datasets/lfw \
+	--lfw   ${ds}/datasets/lfwmtcnn \
 	--mtcnn ${md}/mtcnn
 

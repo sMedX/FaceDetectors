@@ -7,6 +7,11 @@ import time
 import pathlib as plib
 
 
+def mkdir(dirname):
+    if not dirname.exists():
+        dirname.mkdir(parents=True)
+
+
 def write_image(image, filename, prefix=None):
     if prefix is not None:
         filename = os.path.join(str(prefix), str(filename))

@@ -1,10 +1,10 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import pathlib as plib
+import tfmtcnn
 from collections import OrderedDict
 from tensorflow.contrib import slim
-from .mtcnn import *
+from tfmtcnn.models.mtcnn import *
 
 
 # config to train P-Net (prediction net)
@@ -35,13 +35,13 @@ class Config:
 
 # construct PNet
 class PNet:
-    def __init__(self, config=None, model_path=None):
+    def __init__(self, config=None, batch_size=1, model_path=None):
         if config is None:
             config = Config()
         self.config = config
 
         if model_path == 'default':
-            model_path = plib.Path(__file__).parent.joinpath('parameters', 'pnet', 'pnet')
+            model_path = tfmtcnn.dirname().joinpath('models', 'parameters', 'pnet', 'pnet')
         self.model_path = model_path
 
         # create a graph
