@@ -8,6 +8,7 @@ import pathlib as plib
 import tensorflow as tf
 import contextlib
 
+import tfmtcnn
 from tfmtcnn.prepare_data import tfrecords
 from tfmtcnn.prepare_data import ioutils
 from tfmtcnn.prepare_data.utils import IoU
@@ -32,8 +33,8 @@ class DBWider:
 
         self.path = plib.Path(os.path.expanduser(path)).absolute()
         self.images = self.path.joinpath('images')
-        self.wider_face_train = self.path.joinpath('wider_face_train.txt')
-        self.wider_face_train_bbx_gt = self.path.joinpath('wider_face_train_bbx_gt.txt')
+        self.wider_face_train = plib.Path(tfmtcnn.__path__[0]).joinpath('data/wider_face_train.txt')
+        self.wider_face_train_bbx_gt = plib.Path(tfmtcnn.__path__[0]).joinpath('data/wider_face_train_bbx_gt.txt')
         self.tfwriter = None
 
     def prepare(self, tfprefix, image_size, seed=None):
