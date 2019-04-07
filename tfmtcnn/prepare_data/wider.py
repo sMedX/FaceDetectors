@@ -180,7 +180,7 @@ class DBWider:
                         sample = [-1, offset_x1, offset_y1, offset_x2, offset_y2]
                         self.add_to_tfrecord('part', resized, sample)
 
-    def hardexamples(self, configs, threshold=(0.6, 0.7, 0.7), min_face_size=20, stride=2):
+    def prepare_with_mtcnn(self, configs, threshold=(0.6, 0.7, 0.7), min_face_size=20, stride=2):
 
         if not len(configs) in (2, 3):
             raise ValueError('the number of configs must be 2 or 3.')

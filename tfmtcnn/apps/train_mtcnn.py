@@ -79,10 +79,10 @@ def main(**args):
     config = net.config
 
     # prepare train data
-    dbwider.hardexamples(configs=(nets[0].config, nets[1].config),
-                         threshold=threshold,
-                         min_face_size=min_face_size,
-                         stride=stride)
+    dbwider.prepare_with_mtcnn(configs=(nets[0].config, nets[1].config),
+                               threshold=threshold,
+                               min_face_size=min_face_size,
+                               stride=stride)
 
     dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
 
@@ -95,10 +95,10 @@ def main(**args):
     config = net.config
 
     # prepare train data
-    dbwider.hardexamples(configs=(nets[0].config, nets[1].config, nets[2].config),
-                         threshold=threshold,
-                         min_face_size=min_face_size,
-                         stride=stride)
+    dbwider.prepare_with_mtcnn(configs=(nets[0].config, nets[1].config, nets[2].config),
+                               threshold=threshold,
+                               min_face_size=min_face_size,
+                               stride=stride)
 
     dblfw.prepare(config.dbase.tfprefix, image_size=config.image_size, seed=seed)
 
