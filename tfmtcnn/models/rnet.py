@@ -1,10 +1,10 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import pathlib as plib
+import tfmtcnn
 from collections import OrderedDict
 from tensorflow.contrib import slim
-from .mtcnn import *
+from tfmtcnn.models.mtcnn import *
 
 
 # config to train R-Net (prediction net)
@@ -41,7 +41,7 @@ class RNet:
         self.config = config
 
         if model_path == 'default':
-            model_path = plib.Path(__file__).parent.joinpath('parameters', 'rnet', 'rnet')
+            model_path = tfmtcnn.dirname().joinpath('models', 'parameters', 'rnet', 'rnet')
         self.model_path = model_path
 
         if model_path is not None:

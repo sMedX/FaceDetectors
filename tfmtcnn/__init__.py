@@ -3,7 +3,8 @@ __author__ = 'Ruslan N. Kosarev'
 __version__ = "0.0.1"
 
 import os
+import pathlib as plib
 
 
 def dirname():
-    return os.path.dirname(__file__)
+    return plib.Path(os.path.dirname(__file__))

@@ -33,8 +33,8 @@ class DBWider:
 
         self.path = plib.Path(os.path.expanduser(path)).absolute()
         self.images = self.path.joinpath('images')
-        self.wider_face_train = plib.Path(tfmtcnn.dirname()).joinpath('data/wider_face_train.txt')
-        self.wider_face_train_bbx_gt = plib.Path(tfmtcnn.dirname()).joinpath('data/wider_face_train_bbx_gt.txt')
+        self.wider_face_train = tfmtcnn.dirname().joinpath('data', 'wider_face_train.txt')
+        self.wider_face_train_bbx_gt = tfmtcnn.dirname().joinpath('data', 'wider_face_train_bbx_gt.txt')
         self.tfwriter = None
 
     def prepare(self, tfprefix, image_size, seed=None):
