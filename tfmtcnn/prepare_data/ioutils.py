@@ -2,9 +2,10 @@
 __author__ = 'Ruslan N. Kosarev'
 
 import os
-import cv2
 import time
 import pathlib as plib
+
+import cv2
 
 
 def mkdir(dirname):

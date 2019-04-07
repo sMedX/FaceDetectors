@@ -1,9 +1,8 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import os
-import numpy as np
 import tensorflow as tf
+
 from tfmtcnn.prepare_data import ioutils
 
 
