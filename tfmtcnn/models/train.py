@@ -1,11 +1,13 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import numpy as np
-import cv2
-import tensorflow as tf
 from datetime import datetime
-from tensorboard.plugins import projector
+
+import cv2
+import numpy as np
+import tensorflow as tf
+from tensorflow.contrib.tensorboard.plugins import projector
+
 from tfmtcnn.prepare_data import tfrecords
 
 
