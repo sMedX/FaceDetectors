@@ -3,7 +3,7 @@ This work is used for reproduce MTCNN,a Joint Face Detection and Alignment using
 
 ## Prerequisites
 1. You need CUDA-compatible GPUs to train the model.
-2. You should first download [WIDER Face](http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/) and [CNN_FacePoint(LFW)](http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm). **WIDER Face** for face detection and **CNN_FacePoint(LFW)** for landmark detection.
+2. You should first download [WIDER Face](http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/) and [LFW(CNN_FacePoint)](http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm). **WIDER Face** for face detection and **LFW(CNN_FacePoint)** for landmark detection.
 
 ## Dependencies
 * Tensorflow 1.2.1
