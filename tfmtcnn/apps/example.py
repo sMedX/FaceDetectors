@@ -2,9 +2,10 @@
 __author__ = 'Ruslan N. Kosarev'
 
 import os
-import numpy as np
 import pathlib as plib
+
 import cv2
+import numpy as np
 
 from tfmtcnn.prepare_data import ioutils
 from tfmtcnn.models import pnet
