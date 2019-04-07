@@ -4,8 +4,8 @@ __author__ = 'Ruslan N. Kosarev'
 import numpy as np
 import cv2
 import click
-from mtcnn.mtcnn import MTCNN
 
+from tfmtcnn.mtcnn import MTCNN
 from tfmtcnn.prepare_data import ioutils, lfw
 
 
