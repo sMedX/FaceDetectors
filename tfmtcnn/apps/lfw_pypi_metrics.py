@@ -4,20 +4,21 @@ __author__ = 'Ruslan N. Kosarev'
 import click
 import cv2
 import numpy as np
+from mtcnn.mtcnn import MTCNN
 
-from tfmtcnn.mtcnn import MTCNN
+import tfmtcnn
 from tfmtcnn.prepare_data import ioutils, lfw
 
 
 @click.command()
-@click.option('--lfwdir', default=None, help='path to the LFW database.')
+@click.option('--lfw', default=tfmtcnn.lfwdir, help='path to the LFW database.')
 @click.option('--show', default=False, help='show detected faces.')
-def main(lfwdir, show):
+def main(**args):
 
     # initialize loader
-    dblfw = lfw.DBLFW(lfwdir)
+    dblfw = lfw.DBLFW(args['lfw'])
     print(dblfw)
-    files, boxes, landmarks = dblfw.read_test_annotations
+    files, boxes, landmarks = dblfw.read_test_annotations()
 
     loader = ioutils.ImageLoaderWithPath(files, prefix=dblfw.dbasedir)
 
@@ -47,7 +48,7 @@ def main(lfwdir, show):
         residuals.append(distances.mean()/inter_ocular)
 
         # show rectangles
-        if show:
+        if args['show']:
             for face in faces:
                 # the bounding box is formatted as [x, y, width, height]
                 bbox = face['box']
