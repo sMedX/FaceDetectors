@@ -1,9 +1,10 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import tfmtcnn
 from collections import OrderedDict
 from tensorflow.contrib import slim
+
+import tfmtcnn
 from tfmtcnn.models.mtcnn import *
 
 

@@ -1,11 +1,11 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import numpy as np
-import cv2
 import click
-from mtcnn.mtcnn import MTCNN
+import cv2
+import numpy as np
 
+from tfmtcnn.mtcnn import MTCNN
 from tfmtcnn.prepare_data import ioutils, lfw
 
 

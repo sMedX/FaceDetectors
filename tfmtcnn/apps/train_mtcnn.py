@@ -3,10 +3,12 @@ __author__ = 'Ruslan N. Kosarev'
 
 import os
 import pathlib as plib
+
+import click
+
 from tfmtcnn.prepare_data import wider, lfw
 from tfmtcnn.models import pnet, rnet, onet
 from tfmtcnn.models.train import train
-import click
 
 threshold = (0.6, 0.7, 0.7)
 min_face_size = 20

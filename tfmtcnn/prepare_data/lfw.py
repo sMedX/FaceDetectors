@@ -1,10 +1,28 @@
 # coding:utf-8
+
+"""
+http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm
+
+Training set: [Download http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/train.zip]
+It contains 5,590 LFW images and 7,876 other images downloaded from the web. The training set and validation set
+are defined in trainImageList.txt and testImageList.txt, respectively. Each line of these text files starts with
+the image name, followed by the boundary positions of the face bounding box retured by our face detector, then followed
+by the positions of the five facial points.
+
+Testing set: [Download http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/test.zip]
+It contains the 1,521 BioID images, 781 LFPW training images, and 249 LFPW test images used in our testing, together
+with the text files recording the boundary positions of the face bounding box retured by our face detector for each
+dataset. A few images that our face detector failed are not listed in the text files. LFPW images are renamed for
+the convenience of processing.
+"""
+
 __author__ = 'Ruslan N. Kosarev'
 
 import os
+import pathlib as plib
+
 import cv2
 import numpy as np
-import pathlib as plib
 import tensorflow as tf
 
 from tfmtcnn.prepare_data import tfrecords
@@ -12,22 +30,6 @@ from tfmtcnn.prepare_data.utils import IoU
 from tfmtcnn.prepare_data.bboxes import BBox
 from tfmtcnn.prepare_data.landmarks import rotate, flip
 from tfmtcnn.prepare_data import ioutils
-
-"""
-http://mmlab.ie.cuhk.edu.hk/archive/CNN_FacePoint.htm
-
-Training set: [Download http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/train.zip]
-It contains 5,590 LFW images and 7,876 other images downloaded from the web. The training set and validation set 
-are defined in trainImageList.txt and testImageList.txt, respectively. Each line of these text files starts with 
-the image name, followed by the boundary positions of the face bounding box retured by our face detector, then followed 
-by the positions of the five facial points.
-
-Testing set: [Download http://mmlab.ie.cuhk.edu.hk/archive/CNN/data/test.zip]
-It contains the 1,521 BioID images, 781 LFPW training images, and 249 LFPW test images used in our testing, together 
-with the text files recording the boundary positions of the face bounding box retured by our face detector for each 
-dataset. A few images that our face detector failed are not listed in the text files. LFPW images are renamed for 
-the convenience of processing.
-"""
 
 
 class DBLFW:

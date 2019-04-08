@@ -3,6 +3,7 @@ __author__ = 'Ruslan N. Kosarev'
 
 import cv2
 import numpy as np
+
 from tfmtcnn.models import pnet
 from tfmtcnn.models import rnet
 from tfmtcnn.models import onet

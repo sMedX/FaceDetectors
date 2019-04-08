@@ -2,9 +2,11 @@
 __author__ = 'Ruslan N. Kosarev'
 
 import os
-import numpy as np
 import pathlib as plib
+
+import click
 import cv2
+import numpy as np
 
 from tfmtcnn.prepare_data import ioutils
 from tfmtcnn.models import pnet
@@ -29,6 +31,7 @@ min_face_size = 20
 stride = 2
 
 
+@click.command()
 def main():
     detectors = [None, None, None]
 
