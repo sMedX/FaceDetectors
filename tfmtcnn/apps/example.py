@@ -8,14 +8,15 @@ import click
 import cv2
 import numpy as np
 
+import tfmtcnn
 from tfmtcnn.prepare_data import ioutils
 from tfmtcnn.models import pnet
 from tfmtcnn.models import rnet
 from tfmtcnn.models import onet
 from tfmtcnn.mtcnn import MTCNN
 
-imgdir = plib.Path(os.pardir, 'images').absolute()
-outdir = plib.Path(os.pardir, os.pardir, os.pardir, 'results').absolute()
+imgdir = tfmtcnn.dirname().joinpath('images')
+outdir = tfmtcnn.dirname().joinpath(os.pardir, 'output')
 
 prefix = plib.Path(os.pardir, os.pardir, os.pardir).absolute()
 prefix = [prefix.joinpath('mtcnn', 'PNet', 'pnet'),
