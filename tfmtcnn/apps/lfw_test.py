@@ -5,30 +5,27 @@ import click
 import cv2
 import numpy as np
 
+import tfmtcnn
 from tfmtcnn.prepare_data import ioutils, lfw
 from tfmtcnn.mtcnn import MTCNN
 
-threshold = [0.6, 0.7, 0.7]
-min_face_size = 20
-stride = 2
-
 
 @click.command()
-@click.option('--lfwdir', default=None, help='path to the LFW database.')
+@click.option('--lfw', default=tfmtcnn.lfwdir, help='path to the LFW database.')
 @click.option('--show', default=False, help='show detected faces.')
-def main(lfwdir, show=False):
+def main(**args):
 
     # initialize loader
-    dblfw = lfw.DBLFW(lfwdir)
+    dblfw = lfw.DBLFW(args['lfw'])
     print(dblfw)
-    files, boxes, landmarks = dblfw.read_test_annotations
+    files, boxes, landmarks = dblfw.read_test_annotations()
 
     loader = ioutils.ImageLoaderWithPath(files, prefix=dblfw.dbasedir)
 
     # initialize detector
-    detector = MTCNN(min_face_size=min_face_size,
-                     stride=stride,
-                     threshold=threshold)
+    detector = MTCNN(min_face_size=tfmtcnn.min_face_size,
+                     stride=tfmtcnn.stride,
+                     threshold=tfmtcnn.threshold)
 
     residuals = []
 
@@ -48,7 +45,7 @@ def main(lfwdir, show=False):
         residuals.append(distances.mean()/inter_ocular)
 
         # show rectangles
-        if show:
+        if args['show']:
             for bbox in detected_boxes:
                 position = (int(bbox[0]), int(bbox[1]))
                 cv2.putText(image, str(np.round(bbox[4], 2)), position, cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 0, 255))
