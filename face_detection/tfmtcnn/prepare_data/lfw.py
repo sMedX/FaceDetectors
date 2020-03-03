@@ -25,11 +25,10 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-from tfmtcnn.prepare_data import tfrecords
-from tfmtcnn.prepare_data.utils import IoU
-from tfmtcnn.prepare_data.bboxes import BBox
-from tfmtcnn.prepare_data.landmarks import rotate, flip
-from tfmtcnn.prepare_data import ioutils
+from face_detection.tfmtcnn.prepare_data import tfrecords, ioutils
+from face_detection.tfmtcnn.prepare_data.utils import IoU
+from face_detection.tfmtcnn.prepare_data.bboxes import BBox
+from face_detection.tfmtcnn.prepare_data.landmarks import rotate, flip
 
 
 class DBLFW:

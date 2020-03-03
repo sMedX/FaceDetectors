@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
 
-from tfmtcnn.prepare_data import tfrecords
+from face_detection.tfmtcnn.prepare_data import tfrecords
 
 
 def train_model(loss, config):

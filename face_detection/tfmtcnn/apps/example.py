@@ -8,12 +8,11 @@ import click
 import cv2
 import numpy as np
 
-import tfmtcnn
-from tfmtcnn.prepare_data import ioutils
-from tfmtcnn.models import pnet
-from tfmtcnn.models import rnet
-from tfmtcnn.models import onet
-from tfmtcnn.mtcnn import MTCNN
+from face_detection import tfmtcnn
+from face_detection.tfmtcnn.prepare_data import ioutils
+from face_detection.tfmtcnn.models import pnet, rnet
+from face_detection.tfmtcnn.models import onet
+from face_detection.tfmtcnn import MTCNN
 
 imgdir = tfmtcnn.dirname().joinpath('images')
 outdir = tfmtcnn.dirname().joinpath(os.pardir, 'output')

@@ -20,13 +20,13 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-import tfmtcnn
-from tfmtcnn.prepare_data import tfrecords
-from tfmtcnn.prepare_data import ioutils
-from tfmtcnn.prepare_data.utils import IoU
-from tfmtcnn.models import pnet, rnet, onet
-from tfmtcnn.mtcnn import MTCNN
-from tfmtcnn.prepare_data.utils import convert_to_square
+from face_detection import tfmtcnn
+from face_detection.tfmtcnn.prepare_data import tfrecords, ioutils
+from face_detection.tfmtcnn.prepare_data.utils import IoU
+from face_detection.tfmtcnn.models import onet
+from face_detection.tfmtcnn.models import pnet, rnet
+from face_detection.tfmtcnn import MTCNN
+from face_detection.tfmtcnn.prepare_data.utils import convert_to_square
 
 
 class DBWider:

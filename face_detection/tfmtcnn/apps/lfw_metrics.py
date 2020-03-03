@@ -5,9 +5,9 @@ import click
 import cv2
 import numpy as np
 
-import tfmtcnn
-from tfmtcnn.prepare_data import ioutils, lfw
-from tfmtcnn.mtcnn import MTCNN
+from face_detection import tfmtcnn
+from face_detection.tfmtcnn.prepare_data import lfw, ioutils
+from face_detection.tfmtcnn import MTCNN
 
 
 @click.command()

@@ -4,14 +4,14 @@ __author__ = 'Ruslan N. Kosarev'
 from collections import OrderedDict
 from tensorflow.contrib import slim
 
-import tfmtcnn
-from tfmtcnn.models.mtcnn import *
+from face_detection import tfmtcnn
+from face_detection.tfmtcnn.models.mtcnn import *
 
 
-# config to train O-Net (output net)
+# config to train R-Net (prediction net)
 class Config:
     def __init__(self):
-        self.image_size = 48
+        self.image_size = 24
         self.number_of_epochs = 30
         self.number_of_iterations = 5000
         self.batch_size = 384
@@ -34,15 +34,15 @@ class Config:
         self.prefix = None
 
 
-# construct ONet
-class ONet:
+# construct RNet
+class RNet:
     def __init__(self, config=None, batch_size=1, model_path=None):
         if config is None:
             config = Config()
         self.config = config
 
         if model_path == 'default':
-            model_path = tfmtcnn.dirname().joinpath('models', 'parameters', 'onet', 'onet')
+            model_path = tfmtcnn.dirname().joinpath('models', 'parameters', 'rnet', 'rnet')
         self.model_path = model_path
 
         if model_path is not None:
@@ -72,25 +72,21 @@ class ONet:
                             weights_regularizer=slim.l2_regularizer(0.0005),
                             padding='valid'):
             print(inputs.get_shape())
-            net = slim.conv2d(inputs, num_outputs=32, kernel_size=[3,3], stride=1, scope='conv1')
+            net = slim.conv2d(inputs, num_outputs=28, kernel_size=[3, 3], stride=1, scope='conv1')
             print(net.get_shape())
             net = slim.max_pool2d(net, kernel_size=[3, 3], stride=2, scope='pool1', padding='SAME')
             print(net.get_shape())
-            net = slim.conv2d(net, num_outputs=64, kernel_size=[3, 3], stride=1, scope='conv2')
+            net = slim.conv2d(net, num_outputs=48, kernel_size=[3, 3], stride=1, scope='conv2')
             print(net.get_shape())
             net = slim.max_pool2d(net, kernel_size=[3, 3], stride=2, scope='pool2')
             print(net.get_shape())
-            net = slim.conv2d(net, num_outputs=64, kernel_size=[3, 3], stride=1,scope='conv3')
-            print(net.get_shape())
-            net = slim.max_pool2d(net, kernel_size=[2, 2], stride=2, scope='pool3', padding='SAME')
-            print(net.get_shape())
-            net = slim.conv2d(net, num_outputs=128, kernel_size=[2, 2], stride=1, scope='conv4')
+            net = slim.conv2d(net, num_outputs=64, kernel_size=[2, 2], stride=1, scope='conv3')
             print(net.get_shape())
             fc_flatten = slim.flatten(net)
             print(fc_flatten.get_shape())
-            fc1 = slim.fully_connected(fc_flatten, num_outputs=256, scope='fc1')
+            fc1 = slim.fully_connected(fc_flatten, num_outputs=128, scope='fc1')
             print(fc1.get_shape())
-            
+
             cls_prob = slim.fully_connected(fc1, num_outputs=2, scope='cls_fc', activation_fn=tf.nn.softmax)
             print(cls_prob.get_shape())
 
@@ -100,7 +96,7 @@ class ONet:
             landmark_pred = slim.fully_connected(fc1, num_outputs=10, scope='landmark_fc', activation_fn=None)
             print(landmark_pred.get_shape())
 
-            return cls_prob, bbox_pred, landmark_pred
+        return cls_prob, bbox_pred, landmark_pred
 
     def loss(self, inputs, label, bbox_target, landmark_target):
         cls_prob, bbox_pred, landmark_pred = self.activate(inputs)
@@ -133,6 +129,7 @@ class ONet:
         batch_size = self.batch_size
 
         minibatch = []
+
         cur = 0
         n = databatch.shape[0]
 

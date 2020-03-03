@@ -3,7 +3,7 @@ __author__ = 'Ruslan N. Kosarev'
 
 import tensorflow as tf
 
-from tfmtcnn.prepare_data import ioutils
+from face_detection.tfmtcnn.prepare_data import ioutils
 
 
 def getfilename(prefix, key):

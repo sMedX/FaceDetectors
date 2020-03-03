@@ -3,18 +3,14 @@
 #
 # Copyright (c) 2016 Ruslan N. Kosarev
 
-import sys
 import os
-import argparse
-import tensorflow as tf
 import numpy as np
 from time import sleep
 import random
 import click
-from tensorflow import keras
 
-from tfmtcnn import ioutils
-from tfmtcnn.face_detector import FaceDetector
+from face_detection.tfmtcnn import ioutils
+from face_detection.tfmtcnn.face_detector import FaceDetector
 
 
 @click.command()

@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 from mtcnn.mtcnn import MTCNN
 
-import tfmtcnn
-from tfmtcnn.prepare_data import ioutils, lfw
+from face_detection import tfmtcnn
+from face_detection.tfmtcnn.prepare_data import lfw, ioutils
 
 
 @click.command()

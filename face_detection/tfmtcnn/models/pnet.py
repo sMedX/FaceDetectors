@@ -4,8 +4,8 @@ __author__ = 'Ruslan N. Kosarev'
 from collections import OrderedDict
 from tensorflow.contrib import slim
 
-import tfmtcnn
-from tfmtcnn.models.mtcnn import *
+from face_detection import tfmtcnn
+from face_detection.tfmtcnn.models.mtcnn import *
 
 
 # config to train P-Net (prediction net)

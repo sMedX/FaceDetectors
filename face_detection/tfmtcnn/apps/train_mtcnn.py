@@ -6,9 +6,10 @@ import pathlib as plib
 
 import click
 
-from tfmtcnn.prepare_data import wider, lfw
-from tfmtcnn.models import pnet, rnet, onet
-from tfmtcnn.models.train import train
+from face_detection.tfmtcnn.prepare_data import wider, lfw
+from face_detection.tfmtcnn.models import onet
+from face_detection.tfmtcnn.models import pnet, rnet
+from face_detection.tfmtcnn.models.train import train
 
 threshold = (0.6, 0.7, 0.7)
 min_face_size = 20
