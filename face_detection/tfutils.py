@@ -11,7 +11,7 @@ def load_model_from_url(model_name, base_url='http://download.tensorflow.org/mod
     return Path(model_dir)
 
 
-def load_graph(file, name='frozen_inference_graph.pb'):
+def load_frozen_graph(file, name='frozen_inference_graph.pb'):
     if file.is_dir():
         if file.joinpath(name).is_file():
             file = file.joinpath(name)
