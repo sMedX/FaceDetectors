@@ -1,25 +1,21 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import os
 import time
+from functools import partial
+from pathlib import Path
 from PIL import Image
 import numpy as np
-import pathlib as plib
 
 
-def mkdir(dirname):
-    dirname = plib.Path(dirname)
-
-    if not dirname.exists():
-        dirname.mkdir(parents=True)
+mkdir = partial(Path.mkdir, parents=True, exist_ok=True)
 
 
 def write_image(image, filename, prefix=None, mode='RGB'):
     if prefix is not None:
-        filename = os.path.join(str(prefix), str(filename))
+        filename = prefix.joinpath(filename)
 
-    mkdir(os.path.dirname(filename))
+    mkdir(filename.parent)
 
     if isinstance(image, np.ndarray):
         image = array2pil(image, mode=mode)
@@ -30,7 +26,7 @@ def write_image(image, filename, prefix=None, mode='RGB'):
 
 def read_image(filename, prefix=None):
     if prefix is not None:
-        image = Image.open(os.path.join(str(prefix), str(filename)))
+        image = Image.open(str(prefix.joinpath(filename)))
     else:
         image = Image.open(str(filename))
 
@@ -46,22 +42,22 @@ class ImageLoader:
 
     def __init__(self, input, prefix=None, display=100, log=True):
 
-        if not isinstance(input, (str, list)):
-            raise IOError('Input \'{}\' must be directory or list of files'.format(input))
+        if not isinstance(input, (Path, list)):
+            raise IOError("Input '{}' must be directory or list of files".format(input))
 
         if isinstance(input, list):
             self.files = input
-        elif os.path.isdir(os.path.expanduser(input)):
-            prefix = os.path.expanduser(input)
-            self.files = os.listdir(prefix)
+        elif input.expanduser().is_dir():
+            prefix = input.expanduser()
+            self.files = [f.name for f in prefix.glob('*')]
         else:
-            raise IOError('Directory \'{}\' does not exist'.format(input))
+            raise IOError("Directory '{}' does not exist".format(input))
 
         self.counter = 0
         self.start_time = time.time()
         self.display = display
         self.size = len(self.files)
-        self.prefix = str(prefix)
+        self.prefix = prefix
         self.log = log
         self.__filename = None
 
@@ -118,3 +114,7 @@ def array2pil(image, mode='RGB'):
 
     return output
 
+
+def gray_to_rgb(image: np.ndarray):
+    assert len(image.shape) == 2
+    return np.stack([image, image, image], axis=2)
