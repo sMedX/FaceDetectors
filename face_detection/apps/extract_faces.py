@@ -9,7 +9,7 @@ from time import sleep
 import random
 import click
 
-from face_detection.tfmtcnn import ioutils
+from face_detection import ioutils
 from face_detection.tfmtcnn.face_detector import FaceDetector
 
 
