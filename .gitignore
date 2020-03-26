@@ -82,7 +82,10 @@ venv.bak/
 # PyCharm
 .idea/
 
-# Outputs
+# data
+data/
+
+# outputs
 output/
 
 *.sh
