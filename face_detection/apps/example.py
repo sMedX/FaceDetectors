@@ -9,9 +9,11 @@ from pathlib import Path
 from face_detection import ioutils, config
 from face_detection.detector import FaceDetector
 
+detector = config.default_detector
+
 
 @click.command()
-@click.option('--detector', default=config.ssd_inception_v2_coco,
+@click.option('--detector', default=detector,
               help='type of face detector, pypimtcnn, tfmtcnn, or others')
 @click.option('--input', default=config.dir_images, type=Path,
               help='video file or directory to read images')

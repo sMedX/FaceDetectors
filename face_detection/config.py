@@ -7,7 +7,5 @@ dir_images = data_dir.joinpath('images')
 dir_output = data_dir.joinpath('output')
 
 # detectors
-ssdlite_mobilenet = 'ssdlite_mobilenet'
-ssd_inception_resnet = 'ssd_inception_resnet'
-ssd_inception_v2_coco = 'ssd_inception_v2_coco'
+default_detector = 'ssdlite_mobilenet'
 
