@@ -1,81 +1,56 @@
 # coding:utf-8
 __author__ = 'Ruslan N. Kosarev'
 
-import os
-import pathlib as plib
-
 import click
 import cv2
 import numpy as np
+from pathlib import Path
 
-from face_detection import tfmtcnn
-from face_detection.tfmtcnn.prepare_data import ioutils
-from face_detection.tfmtcnn.models import pnet, rnet
-from face_detection.tfmtcnn.models import onet
-from face_detection.tfmtcnn import MTCNN
-
-imgdir = tfmtcnn.dirname().joinpath('images')
-outdir = tfmtcnn.dirname().joinpath(os.pardir, 'output')
-
-prefix = plib.Path(os.pardir, os.pardir, os.pardir).absolute()
-prefix = [prefix.joinpath('mtcnn', 'PNet', 'pnet'),
-          prefix.joinpath('mtcnn', 'RNet', 'rnet'),
-          prefix.joinpath('mtcnn', 'ONet', 'onet')]
-
-epochs = [30, 30, 30]
-model_path = ['{}-{}'.format(x, y) for x, y in zip(prefix, epochs)]
-
-mode = 'ONet'
-threshold = [0.6, 0.7, 0.7]
-min_face_size = 20
-stride = 2
+from face_detection import ioutils, config
+from face_detection.detector import FaceDetector
 
 
 @click.command()
-def main():
-    detectors = [None, None, None]
+@click.option('--detector', default=config.ssd_inception_v2_coco,
+              help='type of face detector, pypimtcnn, tfmtcnn, or others')
+@click.option('--input', default=config.dir_images, type=Path,
+              help='video file or directory to read images')
+@click.option('--output', default=config.dir_output, type=Path,
+              help='directory to save processed images with frames')
+@click.option('--show', default=1, help='show face detections')
+def main(**args):
+    """Simple program to detect faces with tfmtcnn and pypi mtcnn detectors."""
 
-    # load P-net model
-    if mode in ('PNet', 'RNet', 'ONet'):
-        detectors[0] = pnet.PNet(model_path='default')
+    detector = FaceDetector.create(args['detector'])
 
-    # load R-net model
-    if mode in ('RNet', 'ONet'):
-        detectors[1] = rnet.RNet(model_path='default')
+    if args['input'].is_file():
+        loader = ioutils.VideoLoader(args['input'])
+    else:
+        loader = ioutils.ImageLoader(args['input'])
 
-    # load O-net model
-    if mode in ('ONet',):
-        detectors[2] = onet.ONet(model_path='default')
-
-    detector = MTCNN(detectors=detectors,
-                     min_face_size=min_face_size,
-                     stride=stride,
-                     threshold=threshold)
-
-    if not outdir.exists():
-        outdir.mkdir()
-
-    loader = ioutils.ImageLoaderWithPath(os.listdir(str(imgdir)), prefix=imgdir)
-
-    for image, path in loader:
-        boxes, landmarks = detector.detect(image)
+    for image in loader:
+        boxes = detector.get_faces(np.expand_dims(image, axis=0))
+        print('number of detected faces', len(boxes[0]))
+        print(boxes)
 
         # show rectangles
-        for bbox in boxes:
-            position = (int(bbox[0]), int(bbox[1]))
-            cv2.putText(image, str(np.round(bbox[4], 2)), position, cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 0, 255))
-            cv2.rectangle(image, position, (int(bbox[2]), int(bbox[3])), (0, 0, 255))
+        image_ = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        boxes = detector.get_boxes()
 
-        # show landmarks
-        for landmark in landmarks:
-            for x, y in landmark:
-                cv2.circle(image, (x, y), 3, (0, 0, 255))
+        for bbox in boxes[0]:
+            print(bbox)
 
-        ioutils.write_image(image, path.name, prefix=outdir)
+            # draw text and frames
+            cv2.putText(image_, bbox.confidence_as_string, bbox.left_upper, cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 0, 255))
+            cv2.rectangle(image_, bbox.left_upper, bbox.right_lower, (0, 0, 255))
 
-        cv2.imshow(str(path), image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        ioutils.write_image(ioutils.array2pil(image_, mode='BGR'),
+                            loader.name, prefix=args['output'], )
+
+        if args['show']:
+            cv2.imshow(loader.name, image_)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
