@@ -1,9 +1,8 @@
-#export CUDA_VISIBLE_DEVICES=0
-#export PYTHONPATH=$PYTHONPATH:/media/b/repo/tf_models/research:/media/b/repo/tf_models/research/slim
+export CUDA_VISIBLE_DEVICES=1
 
-md=/home/korus/workspace/faces/venv-objdet/lib/python3.6/site-packages/tensorflow/models/research
+md=/home/ruslan/Faces/venv-faces/lib/python3.6/site-packages/tensorflow/models/research
 
 python3 $md/object_detection/legacy/train.py \
  --logtostderr \
  --train_dir=output \
- --pipeline_config_path=configs/ssd_inception_v2_coco/ssd_inception_v2_coco.config
+ --pipeline_config_path=configs/ssd_mobilenet_v1_0.75_depth_300x300_coco14_sync_2018_07_03/pipeline.config
