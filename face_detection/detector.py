@@ -6,9 +6,6 @@ import tensorflow as tf
 from pathlib import Path
 from typing import Iterable
 
-# from facenets import ioutils
-# from facenets.prepare import config
-
 _SRC_DIR = Path(__file__).stem
 
 
@@ -288,16 +285,5 @@ class FaceDetector:
 
     @staticmethod
     def create(detector_name: str):
-
-        # if detector_name == config.detector_mtcnn:
-        #     detector = PYPIMTCNN()
-        # elif detector_name == config.detector_tfmtcnn:
-        #     from facenets.ml.detector.tfmtcnn.mtcnn import MTCNN
-        #     detector = TFMTCNN()
-        # else:
-        #     if detector_name not in detector_names():
-        #         raise "Detector {} is not defined in {}".format(detector_name, detector_names())
-
         detector = FaceDetectorBase(name=detector_name)
-
         return detector
