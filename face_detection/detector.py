@@ -76,25 +76,29 @@ def load_graph(filename):
 
 class FaceDetectorBase:
     """Base FaceDetector class"""
-    def __init__(self, margin=0.2, threshold=0.7, name=None, gpu_memory_fraction=1.0):
+    def __init__(self, name, margin=0.2, threshold=0.7, gpu_memory_fraction=1.0):
         self.margin = margin
         self.threshold = threshold
         self._boxes = []
         self._scores = []
         self.name = name
 
-        if self.name is not None:
-            self.path = path_to_inference(self.name)
-            if not self.path.exists():
-                raise ValueError("Inference file '{}' does not exist".format(name))
-            graph = load_graph(self.path)
+        self.path = path_to_inference(self.name)
+        if not self.path.exists():
+            raise ValueError("Inference file '{}' does not exist".format(name))
 
-            gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction)
-            self.sess = tf.Session(graph=graph, config=tf.ConfigProto(gpu_options=gpu_options,
-                                                                      log_device_placement=False))
-            self.image_tensor = graph.get_tensor_by_name('image_tensor:0')
-            self.detection_boxes = graph.get_tensor_by_name('detection_boxes:0')
-            self.detection_scores = graph.get_tensor_by_name('detection_scores:0')
+        graph = load_graph(self.path)
+
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction)
+        self.sess = tf.Session(graph=graph, config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
+        self.image_tensor = graph.get_tensor_by_name('image_tensor:0')
+
+        self.tensors = {
+            'boxes': graph.get_tensor_by_name('detection_boxes:0'),
+            'scores': graph.get_tensor_by_name('detection_scores:0'),
+            # 'classes': graph.get_tensor_by_name('detection_classes:0'),
+            # 'detections': graph.get_tensor_by_name('num_detections:0')
+            }
 
     def get_faces(self, image: Iterable[np.ndarray]):
         """
@@ -107,10 +111,10 @@ class FaceDetectorBase:
         :return: a list of size Batch, of lists, of boxes [x1, y1, x2, y2]
         """
         image = self.prepare_batch(image)
-        boxes, scores = self.sess.run([self.detection_boxes, self.detection_scores],
-                                      feed_dict={self.image_tensor: image})
 
-        self.save_results(boxes, scores, image[0].shape)
+        output = self.sess.run(self.tensors, feed_dict={self.image_tensor: image})
+
+        self.save_results(output['boxes'], output['scores'], image[0].shape)
 
         return self._boxes
 
